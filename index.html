@@ -109,7 +109,8 @@
   .unread i { width: 7px; height: 7px; border-radius: 50%; background: #f0a58a; }
 
   .sec { display: flex; align-items: center; justify-content: space-between; padding: 8px 20px 10px; }
-  .sec h2 { font-size: 18px; font-weight: 700; }
+  .sec h2 { font-size: 13px; font-weight: 500; color: var(--slate); letter-spacing: 0.04em; }
+  .sec .count { min-width: 20px; height: 20px; padding: 0 6px; font-size: 11px; }
   .rooms { flex: 1; min-width: 0; display: flex; gap: 8px; overflow-x: auto; padding: 6px 20px 8px 4px; scroll-snap-type: x proximity; }
   .rooms::-webkit-scrollbar { display: none; }
   .rooms button { flex: none; white-space: nowrap; scroll-snap-align: start; }
@@ -195,7 +196,7 @@
         </div>
       </div>
       <div class="rail" id="hot"></div>
-      <div class="sec" id="pastSec"><h2>지난 이야기</h2><span class="count" id="allCount"></span></div>
+      <div class="sec" id="pastSec"><h2>History</h2><span class="count" id="allCount"></span></div>
       <div class="list" id="all"></div>
     </div>
   </section>
