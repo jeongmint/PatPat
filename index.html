@@ -28,7 +28,24 @@
   button { font: inherit; color: inherit; cursor: pointer; border: 0; background: none; }
   .app { position: relative; width: 100%; max-width: 480px; height: 100%; overflow: hidden; }
   .view { position: absolute; inset: 0; display: flex; flex-direction: column; background: var(--cream); transition: transform .3s ease; }
-  .thread { transform: translateX(100%); }
+  .thread {
+    transform: translateX(100%); color: #fff;
+    background-color: var(--slate); background-size: cover; background-position: center;
+  }
+  .bars { display: flex; gap: 4px; padding: 12px 20px 0; }
+  .bars i { flex: 1; height: 3px; border-radius: 3px; background: #fff6; }
+  .bars i.on { background: #fff; }
+  .thread .icon-btn { background: #0003; color: #fff; box-shadow: none; backdrop-filter: blur(8px); }
+  .thread .sub { color: #ffffffcc; }
+  .thread .t-head h1 { text-shadow: 0 1px 8px #0005; }
+  .thread .chip { background: #ffffff33; color: #fff; box-shadow: none; backdrop-filter: blur(8px); }
+  .thread .chip.on { background: #fff; color: var(--ink); }
+  .thread .replies { justify-content: flex-end; min-height: 50%; }
+  .thread .bubble { background: #ffffffd9; color: var(--ink); backdrop-filter: blur(12px); box-shadow: none; }
+  .thread .reply.me .bubble { background: #bfefe0e6; }
+  .thread .pill { background: #0000004d; backdrop-filter: blur(8px); }
+  .thread .reply.me .pill { background: #87cbb9cc; }
+  .thread .input { background: #ffffffe6; backdrop-filter: blur(12px); }
   .app.open .thread { transform: none; }
   .app.open .home { transform: translateX(-25%); }
 
@@ -73,9 +90,14 @@
     background: var(--card); box-shadow: var(--shadow); scroll-snap-align: start;
     display: flex; flex-direction: column; gap: 12px;
   }
-  .tcard.big { width: 250px; background: var(--deep); color: #fff; }
-  .tcard.big .sub, .tcard.big .last { color: #e6f6f0; }
-  .tcard.mint { background: var(--mint); }
+  .tcard.photo {
+    width: 230px; min-height: 250px; color: #fff; justify-content: flex-end;
+    background-size: cover; background-position: center;
+  }
+  .tcard.photo .who-row { margin-bottom: auto; }
+  .tcard.photo .sub, .tcard.photo .last { color: #ffffffd9; }
+  .tcard.photo .av { border-color: #fff6; }
+  .tcard.photo h3 { font-size: 18px; text-shadow: 0 1px 6px #0004; }
   .who-row { display: flex; align-items: center; gap: 10px; }
   .who-row b { font-size: 13px; font-weight: 700; display: block; }
   .sub { font-size: 11px; color: var(--slate); }
@@ -151,14 +173,15 @@
     </div>
   </section>
 
-  <section class="view thread">
+  <section class="view thread" id="thread">
+    <div class="bars" id="bars"></div>
     <div class="top">
       <button class="icon-btn" id="back" aria-label="뒤로">←</button>
       <button class="icon-btn" aria-label="더보기">⋯</button>
     </div>
-    <div class="scroll" id="tScroll">
+    <div class="scroll" id="tScroll" style="display:flex;flex-direction:column">
       <div class="t-head" id="tHead"></div>
-      <div class="replies" id="replies"></div>
+      <div class="replies" id="replies" style="margin-top:auto"></div>
     </div>
     <footer>
       <div class="input">
@@ -221,9 +244,10 @@
     rail.innerHTML = "";
     (hot.length ? hot : threads.slice(0, 2)).forEach((t, k) => {
       const b = document.createElement("button");
-      b.className = "tcard " + (k === 0 ? "big" : "mint");
+      b.className = "tcard photo";
+      b.style.backgroundImage = `linear-gradient(#0000 35%, #0007), ${t.photo}`;
       b.innerHTML = `
-        <div class="who-row"><span class="thumb" style="background-image:${t.photo}"></span>
+        <div class="who-row">${av(t.by)}
           <div><b>${people[t.by].name}</b><span class="sub">${t.time}</span></div></div>
         <h3>${esc(t.title)}</h3>
         <div class="last">${lastLine(t)}</div>
@@ -248,8 +272,10 @@
 
   function renderThread() {
     const t = threads[current];
+    document.getElementById("thread").style.backgroundImage = `linear-gradient(#0005, #0000 30%, #0000 55%, #0006), ${t.photo}`;
+    document.getElementById("bars").innerHTML = threads.map((_, k) => `<i class="${k <= current ? "on" : ""}"></i>`).join("");
     document.getElementById("tHead").innerHTML = `
-      <div class="who-row"><span class="thumb" style="width:44px;height:44px;background-image:${t.photo}"></span>
+      <div class="who-row">${av(t.by)}
         <div><b>${people[t.by].name}</b><span class="sub">${t.time} · 답장 ${t.replies.length}</span></div>
         <span style="margin-left:auto">${stack(t)}</span></div>
       <h1>${esc(t.title)}</h1>
