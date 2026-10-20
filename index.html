@@ -37,28 +37,31 @@
   .scroll { flex: 1; overflow-y: auto; }
 
   /* 상단 */
-  .top { display: flex; align-items: center; height: 52px; border-bottom: 1px solid var(--line); }
-  .logo { font-weight: 700; font-size: 17px; padding: 0 16px; letter-spacing: -0.04em; }
-  .seg { display: flex; height: 100%; margin-left: auto; }
-  .seg button { padding: 0 16px; font-size: 13px; color: var(--slate); border-left: 1px solid var(--line); }
-  .seg button.on { background: var(--ink); color: #fff; }
-  .tabs { display: flex; height: 44px; border-bottom: 1px solid var(--line); }
-  .new { width: 44px; flex: none; font-size: 20px; font-weight: 400; background: var(--deep); color: #fff; }
+  .top { display: flex; align-items: center; justify-content: space-between; padding: 16px 20px 8px; }
+  .me { width: 40px; height: 40px; border-radius: 50%; background: var(--teal); color: #fff; display: grid; place-items: center; font-size: 15px; font-weight: 500; }
+  .icon-btn { width: 40px; height: 40px; border-radius: 50%; background: #fff; border: 1px solid var(--line); color: var(--slate); font-size: 18px; }
+  .seg { display: flex; padding: 3px; border-radius: 999px; background: #fff; border: 1px solid var(--line); }
+  .seg button { font-size: 13px; padding: 6px 16px; border-radius: 999px; color: var(--slate); }
+  .seg button.on { background: var(--deep); color: #fff; }
+  .tabs { display: flex; align-items: center; gap: 4px; padding: 6px 0 10px 20px; }
+  .new { width: 30px; height: 30px; flex: none; border-radius: 50%; background: var(--deep); color: #fff; font-size: 16px; line-height: 1; }
   .new[aria-expanded="true"] { background: var(--ink); }
-  .rooms { flex: 1; min-width: 0; display: flex; overflow-x: auto; }
+  .rooms { flex: 1; min-width: 0; display: flex; gap: 8px; overflow-x: auto; padding: 4px 20px 4px 4px; }
   .rooms::-webkit-scrollbar { display: none; }
   .rooms button {
-    flex: none; padding: 0 14px; font-size: 14px; color: var(--slate); white-space: nowrap;
-    border-right: 1px solid var(--line); display: flex; align-items: center; gap: 6px;
+    flex: none; white-space: nowrap; font-size: 13px; padding: 6px 14px; border-radius: 999px;
+    background: #fff; border: 1px solid var(--line); color: var(--slate); display: flex; align-items: center; gap: 6px;
   }
-  .rooms button.on { color: var(--ink); font-weight: 700; box-shadow: inset 0 -2px var(--deep); }
+  .rooms button.on { background: var(--deep); border-color: var(--deep); color: #fff; }
 
   .av {
-    width: 28px; height: 28px; border-radius: 4px; display: inline-grid; place-items: center;
+    width: 28px; height: 28px; border-radius: 50%; display: inline-grid; place-items: center;
     font-size: 12px; font-weight: 500; color: #fff; flex: none;
   }
-  .av.s { width: 20px; height: 20px; font-size: 10px; border-radius: 3px; }
-  .stack { display: flex; gap: 2px; }
+  .av.s { width: 20px; height: 20px; font-size: 10px; }
+  .stack { display: flex; }
+  .stack .av { margin-left: -6px; border: 2px solid #fff6; box-sizing: content-box; }
+  .stack .av:first-child { margin-left: 0; }
 
   /* 작성 */
   .sheet { border-bottom: 1px solid var(--line); background: #fff; }
@@ -76,22 +79,27 @@
   }
   .send { background: var(--ink); color: #fff; font-size: 14px; font-weight: 500; padding: 0 18px; }
 
-  /* 피드: 2열 모자이크 */
-  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 2px; background: var(--line); }
-  .tile {
-    position: relative; aspect-ratio: 3 / 4; background-size: cover; background-position: center;
-    color: #fff; text-align: left; display: flex; flex-direction: column; justify-content: flex-end; padding: 12px; gap: 4px; min-width: 0;
+  /* 피드: 가로로 넘기는 사진 카드 (직사각형) */
+  .rail { display: flex; gap: 10px; overflow-x: auto; padding: 4px 20px 8px; scroll-snap-type: x mandatory; scroll-padding-inline: 20px; }
+  .rail::-webkit-scrollbar { display: none; }
+  .tcard {
+    flex: none; width: 230px; min-height: 260px; padding: 16px; color: #fff; text-align: left;
+    background-size: cover; background-position: center; scroll-snap-align: start;
+    display: flex; flex-direction: column; gap: 10px;
   }
-  .tile:first-child { grid-column: span 2; aspect-ratio: 16 / 11; }
-  .tile.text h3 { font-size: 20px; }
-  .tile:first-child h3 { font-size: 22px; }
-  .tile h3 { font-size: 16px; font-weight: 700; line-height: 1.3; }
-  .tile .meta { display: flex; align-items: center; gap: 6px; font-size: 11px; opacity: .9; }
-  .tile .last { font-size: 12px; opacity: .85; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .badges { position: absolute; top: 0; right: 0; display: flex; }
-  .badges span { font-size: 11px; padding: 4px 8px; background: #0006; }
-  .badges .n { background: var(--deep); font-weight: 700; }
-  .empty { padding: 28px 16px; font-size: 13px; color: var(--slate); background: var(--paper); grid-column: span 2; }
+  .tcard .who-row { margin-bottom: auto; }
+  .tcard .who-row b { display: block; font-size: 13px; }
+  .tcard .sub, .tcard .last { color: #ffffffd9; font-size: 11px; }
+  .tcard .last { font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .tcard h3 { font-size: 18px; font-weight: 700; line-height: 1.3; text-shadow: 0 1px 6px #0004; }
+  .tcard.text h3 { font-size: 22px; text-shadow: none; }
+  .tcard .foot { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+  .left { font-size: 11px; padding: 3px 8px; background: #0000004d; margin-left: auto; align-self: flex-start; }
+  .unread { display: inline-flex; align-items: center; gap: 6px; font-size: 11px; }
+  .unread i { width: 7px; height: 7px; border-radius: 50%; background: #f0a58a; }
+  .plus { width: 34px; height: 34px; border-radius: 50%; border: 1.5px solid currentColor; display: grid; place-items: center; font-size: 18px; line-height: 1; }
+  .empty { padding: 28px 16px; font-size: 13px; color: var(--slate); flex: 1; border: 1px dashed var(--sand); }
+  #all .empty { border: 0; }
 
   .sec { display: flex; align-items: baseline; gap: 8px; padding: 22px 16px 8px; border-bottom: 1px solid var(--line); }
   .sec h2 { font-size: 12px; font-weight: 500; color: var(--slate); letter-spacing: 0.06em; text-transform: uppercase; }
@@ -112,7 +120,7 @@
   .mk .tag { display: flex; flex-direction: column; font-size: 11px; padding: 4px 8px; background: #fff; color: var(--ink); white-space: nowrap; max-width: 150px; border: 1px solid var(--line); }
   .mk .tag span { overflow: hidden; text-overflow: ellipsis; }
   .mk .song { color: var(--deep); font-size: 10px; }
-  .mk .av { width: 30px; height: 30px; border: 2px solid #fff; border-radius: 0; box-sizing: content-box; }
+  .mk .av { width: 30px; height: 30px; border: 2px solid #fff; box-sizing: content-box; }
   .mk.me .tag { background: var(--mint); }
   .mk.with .av { outline: 2px solid var(--deep); }
   .now { display: flex; border-bottom: 1px solid var(--line); background: #fff; min-height: 44px; }
@@ -147,7 +155,7 @@
   .bars { display: flex; gap: 2px; padding: 8px 8px 0; }
   .bars i { flex: 1; height: 2px; background: #fff6; }
   .bars i.on { background: #fff; }
-  .thread .top { border-bottom: 0; }
+  .thread .top { padding: 0; }
   .thread .top button { width: 52px; height: 52px; font-size: 20px; }
   .t-head { padding: 0 16px 14px; }
   .who-row { display: flex; align-items: center; gap: 8px; font-size: 13px; }
@@ -180,8 +188,9 @@
 <div class="app" id="app">
   <section class="view home">
     <div class="top">
-      <span class="logo">PatPat</span>
+      <span class="me">나</span>
       <div class="seg" id="seg"><button class="on" data-v="feed">피드</button><button data-v="map">지도</button></div>
+      <button class="icon-btn" aria-label="검색">⌕</button>
     </div>
     <div class="tabs">
       <button class="new" id="upload" aria-label="새 스레드 시작" aria-expanded="false">＋</button>
@@ -201,7 +210,7 @@
       </div>
 
       <div id="feedView">
-        <div class="grid" id="hot"></div>
+        <div class="rail" id="hot"></div>
         <div class="sec" id="pastSec"><h2>History</h2><span id="allCount"></span></div>
         <div id="all"></div>
       </div>
@@ -376,13 +385,17 @@
     grid.innerHTML = today.length ? "" : `<div class="empty">오늘 올라온 이야기가 없어요. ＋로 첫 이야기를 올려 보세요</div>`;
     today.forEach(t => {
       const b = document.createElement("button");
-      b.className = "tile" + (t.photo ? "" : " text");
-      b.style.backgroundImage = `linear-gradient(#0000 40%, #0008), ${bg(t)}`;
+      b.className = "tcard" + (t.photo ? "" : " text");
+      b.style.backgroundImage = `linear-gradient(#0000 35%, #0007), ${bg(t)}`;
       b.innerHTML = `
-        <div class="badges">${t.unread ? `<span class="n">${t.unread}</span>` : ""}${t.keptBy && !keep ? "<span>📌</span>" : ""}${keep ? "" : `<span>${hoursLeft(t)}h</span>`}</div>
-        <div class="meta">${av(t.by, "s")}${people[t.by].name} · ${t.time}${t.place ? ` · ${esc(t.place)}` : ""}</div>
+        <div class="who-row">${av(t.by)}
+          <div><b>${people[t.by].name}</b><span class="sub">${t.time}${t.place ? ` · ${esc(t.place)}` : ""}</span></div>
+          ${keep ? "" : `<span class="left">${hoursLeft(t)}시간 남음</span>`}</div>
         <h3>${esc(t.title)}</h3>
-        <div class="last">${lastLine(t)}</div>`;
+        <div class="last">${lastLine(t)}</div>
+        <div class="foot">${keep ? "<span></span>" : stack(t)}
+          ${t.keptBy && !keep ? `<span class="unread">📌</span>` : ""}
+          ${t.unread ? `<span class="unread"><i></i>새 답장 ${t.unread}</span>` : ""}<span class="plus">＋</span></div>`;
       b.onclick = () => openThread(threads.indexOf(t));
       grid.appendChild(b);
     });
