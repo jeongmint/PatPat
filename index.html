@@ -134,6 +134,24 @@
   .keep-btn.on { background: #fff; color: var(--ink); }
   .keep-note { display: inline-block; margin-top: 12px; font-size: 12px; color: #ffffffcc; }
   .pin { font-size: 11px; color: var(--slate); }
+  .seg { display: flex; padding: 3px; border-radius: 999px; background: var(--card); box-shadow: var(--shadow); }
+  .seg button { font-size: 13px; padding: 6px 16px; border-radius: 999px; color: var(--slate); }
+  .seg button.on { background: var(--deep); color: #fff; }
+  .map-wrap { margin: 0 20px; position: relative; aspect-ratio: 4 / 5; max-width: 100%; border-radius: 24px; overflow: hidden; box-shadow: var(--shadow); background: #f7f2ea; }
+  .map-wrap svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+  .map-wrap svg text { font-family: inherit; font-size: 3.2px; fill: var(--slate); }
+  .mk { position: absolute; transform: translate(-50%, -50%); display: flex; flex-direction: column; align-items: center; gap: 3px; }
+  .mk .ph { width: 46px; height: 46px; border-radius: 50%; border: 3px solid #fff; background-size: cover; background-position: center; box-shadow: 0 4px 12px #0003; }
+  .mk .tag { font-size: 11px; padding: 2px 8px; border-radius: 999px; background: #fff; color: var(--ink); box-shadow: var(--shadow); white-space: nowrap; max-width: 130px; overflow: hidden; text-overflow: ellipsis; }
+  .mk.st { flex-direction: row; gap: 4px; }
+  .mk.st .av { width: 32px; height: 32px; font-size: 13px; border: 2px solid #fff; box-shadow: 0 3px 8px #0002; }
+  .mk.st .tag { font-size: 12px; }
+  .mk.st.me .tag { background: var(--mint); }
+  .now { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin: 14px 20px 0; padding: 10px 12px; border-radius: 18px; background: var(--card); box-shadow: var(--shadow); }
+  .now input { flex: 1; min-width: 120px; border: 0; outline: 0; background: none; font: inherit; font-size: 14px; color: var(--ink); }
+  .now select, .sheet select { font: inherit; font-size: 13px; border: 1px solid var(--sand); border-radius: 999px; padding: 5px 8px; background: #fff; color: var(--slate); }
+  .map-note { font-size: 12px; color: var(--slate); margin: 10px 20px 0; }
+  .place-chip { display: inline-block; margin-top: 8px; font-size: 12px; padding: 3px 10px; border-radius: 999px; background: #ffffff33; backdrop-filter: blur(8px); }
   .left { font-size: 11px; padding: 2px 8px; border-radius: 999px; background: #0003; backdrop-filter: blur(6px); margin-left: auto; align-self: flex-start; }
   .list { display: flex; flex-direction: column; gap: 10px; padding: 0 20px; }
   .row {
@@ -185,6 +203,7 @@
   <section class="view home">
     <div class="top">
       <span class="av" style="width:40px;height:40px;font-size:15px;background:var(--teal)">나</span>
+      <div class="seg" id="seg"><button class="on" data-v="feed">피드</button><button data-v="map">지도</button></div>
       <button class="icon-btn" aria-label="검색">⌕</button>
     </div>
     <div class="scroll">
@@ -199,12 +218,31 @@
           <button class="ghost" id="pick">사진 추가</button>
           <span class="picked" id="picked" hidden></span>
           <label class="toggle"><input type="checkbox" id="allowKeep" checked> 보관 허용</label>
+          <select id="place" aria-label="위치"><option value="">📍 위치 없음</option></select>
           <button class="send" id="post">올리기</button>
         </div>
       </div>
-      <div class="rail" id="hot"></div>
-      <div class="sec" id="pastSec"><h2>History</h2><span class="count" id="allCount"></span></div>
-      <div class="list" id="all"></div>
+      <div id="feedView">
+        <div class="rail" id="hot"></div>
+        <div class="sec" id="pastSec"><h2>History</h2><span class="count" id="allCount"></span></div>
+        <div class="list" id="all"></div>
+      </div>
+      <div id="mapView" hidden>
+        <div class="map-wrap" id="map">
+          <svg viewBox="0 0 100 125" preserveAspectRatio="none" aria-hidden="true">
+            <path d="M0 84 C 20 78, 35 94, 55 90 S 85 74, 100 78 L 100 90 C 85 86, 62 104, 45 103 S 15 94, 0 97 Z" fill="#BFEFE0"/>
+            <path d="M10 0 L 30 125 M 0 40 L 100 30 M 55 0 L 62 80 M 0 64 L 100 58 M 75 0 L 92 125" stroke="#D6C7B0" stroke-width=".7" fill="none" opacity=".7"/>
+            <ellipse cx="70" cy="18" rx="9" ry="6" fill="#87CBB9" opacity=".35"/>
+            <ellipse cx="16" cy="76" rx="7" ry="3" fill="#87CBB9" opacity=".35"/>
+          </svg>
+        </div>
+        <div class="now">
+          <input id="nowText" placeholder="지금 뭐 해? 예: ☕ 카공 중" maxlength="20">
+          <select id="nowPlace" aria-label="동네"></select>
+          <button class="send" id="nowBtn">남기기</button>
+        </div>
+        <p class="map-note">위치는 올리는 순간에만, 동네 단위로만 보여요. 상태는 24시간 뒤 사라져요.</p>
+      </div>
     </div>
   </section>
 
@@ -237,17 +275,17 @@
   // 샘플 사진 자리는 그라데이션. at = 올린 시각
   const H = 3600e3, T0 = Date.now();
   const rooms = [
-    { name: "우리 넷", threads: [
-      { by: "jiwoo", at: T0 - 0.4 * H, time: "12:40", title: "퇴근길 하늘 미쳤다", unread: 2, archivable: true, tags: ["하늘", "합정"],
+    { name: "우리 넷", members: ["jiwoo", "hana", "seo"], threads: [
+      { by: "jiwoo", at: T0 - 0.4 * H, time: "12:40", title: "퇴근길 하늘 미쳤다", place: "합정", unread: 2, archivable: true, tags: ["하늘", "합정"],
         photo: "linear-gradient(160deg,#f6c9a8,#e9a3a0 50%,#6B7280)",
         replies: [
           { by: "hana", time: "12:42", text: "어디야 이거?? 색감 뭐임", reacts: { "😮": 2 } },
           { by: "jiwoo", time: "12:43", text: "합정역 앞 육교", reacts: {} },
         ] },
-      { by: "hana", at: T0 - 2 * H, time: "11:05", title: "토요일에 여기 갈 사람", unread: 1, archivable: true, tags: ["약속"],
+      { by: "hana", at: T0 - 2 * H, time: "11:05", title: "토요일에 여기 갈 사람", place: "성수", unread: 1, archivable: true, tags: ["약속"],
         photo: "linear-gradient(170deg,#BFEFE0,#87CBB9 55%,#4d8d7d)",
         replies: [{ by: "jiwoo", time: "11:20", text: "나 토요일 가능", reacts: { "👍": 2 } }] },
-      { by: "seo", at: T0 - 5 * H, time: "09:30", title: "오늘의 점심 평가 부탁", unread: 0, archivable: true, tags: ["점심"],
+      { by: "seo", at: T0 - 5 * H, time: "09:30", title: "오늘의 점심 평가 부탁", place: "여의도", unread: 0, archivable: true, tags: ["점심"],
         photo: "linear-gradient(200deg,#F3EDE2,#D6C7B0 50%,#a88f6a)",
         replies: [
           { by: "me", time: "09:41", text: "7점. 김치가 부족해 보임", reacts: { "😂": 3 } },
@@ -260,7 +298,7 @@
         photo: "linear-gradient(120deg,#BFEFE0,#F3EDE2)",
         replies: [{ by: "seo", time: "3일 전", text: "어디서 샀어 나도", reacts: {} }] },
     ] },
-    { name: "가족", threads: [
+    { name: "가족", members: ["hana"], threads: [
       { by: "hana", at: T0 - 50 * H, time: "2일 전", title: "엄마가 보낸 김장 사진", unread: 0, archivable: true, keptBy: "me", tags: ["김장"],
         photo: "linear-gradient(150deg,#e9b7a2,#c98b72)",
         replies: [{ by: "me", time: "2일 전", text: "주말에 가지러 갈게", reacts: { "👍": 1 } }] },
@@ -277,6 +315,17 @@
     ] },
   ];
   let room = 0, threads = rooms[0].threads;
+  // 동네 단위 위치 (지도 좌표: 100 x 125)
+  const places = {
+    "망원": { x: 24, y: 44 }, "합정": { x: 28, y: 68 }, "홍대": { x: 52, y: 56 }, "연남": { x: 40, y: 24 },
+    "신촌": { x: 72, y: 38 }, "여의도": { x: 48, y: 112 }, "성수": { x: 78, y: 70 },
+  };
+  // 지금 뭐 해: 사람별 최신 상태 하나
+  const statuses = {
+    jiwoo: { text: "☕ 카공 중", place: "연남", at: T0 - 0.5 * H },
+    hana:  { text: "🏃 한강 러닝", place: "망원", at: T0 - 1 * H },
+    seo:   { text: "📚 도서관", place: "신촌", at: T0 - 3 * H },
+  };
   const colors = ["#87CBB9", "#D6C7B0", "#6B7280", "#4f9a87"];
   // 사진이 없으면 단색 배경
   const bg = t => t.photo || `linear-gradient(${t.color}, ${t.color})`;
@@ -350,7 +399,67 @@
       b.onclick = () => openThread(threads.indexOf(t));
       list.appendChild(b);
     });
+
+    renderMap();  }
+
+  function renderMap() {
+    const map = document.getElementById("map");
+    map.querySelectorAll(".mk, .lbl").forEach(e => e.remove());
+    const svg = map.querySelector("svg");
+    svg.querySelectorAll("text").forEach(e => e.remove());
+    Object.entries(places).forEach(([n, p]) => {
+      const t = document.createElementNS("http://www.w3.org/2000/svg", "text");
+      t.setAttribute("x", p.x); t.setAttribute("y", p.y + 9); t.setAttribute("text-anchor", "middle");
+      t.textContent = n;
+      svg.appendChild(t);
+    });
+    const put = (el, place, dx = 0, dy = 0) => {
+      const p = places[place];
+      el.style.left = `calc(${p.x}% + ${dx}px)`;
+      el.style.top = `calc(${p.y / 1.25}% + ${dy}px)`;
+      map.appendChild(el);
+    };
+    // 오늘 올라온 스토리 중 위치가 붙은 것
+    threads.filter(t => t.place && fresh(t)).forEach(t => {
+      const b = document.createElement("button");
+      b.className = "mk";
+      b.innerHTML = `<span class="ph" style="background-image:${bg(t)}"></span><span class="tag">${esc(t.title)}</span>`;
+      b.onclick = () => openThread(threads.indexOf(t));
+      put(b, t.place);
+    });
+    // 이 방 사람들의 상태
+    const r = rooms[room];
+    const who = [...(r.members || (r.dm ? [r.dm] : [])), "me"];
+    who.filter(id => statuses[id] && fresh(statuses[id])).forEach(id => {
+      const st = statuses[id];
+      const d = document.createElement("div");
+      d.className = "mk st" + (id === "me" ? " me" : "");
+      d.innerHTML = `${av(id)}<span class="tag">${esc(st.text)}</span>`;
+      const busy = threads.some(t => t.place === st.place && fresh(t));
+      put(d, st.place, 0, busy ? -48 : 0);
+    });
   }
+
+  document.querySelectorAll("#seg button").forEach(b => b.onclick = () => {
+    document.querySelectorAll("#seg button").forEach(x => x.classList.toggle("on", x === b));
+    const map = b.dataset.v === "map";
+    document.getElementById("feedView").hidden = map;
+    document.getElementById("mapView").hidden = !map;
+    renderHome();
+  });
+
+  // 위치 선택지 채우기
+  Object.keys(places).forEach(n => {
+    document.getElementById("place").add(new Option("📍 " + n, n));
+    document.getElementById("nowPlace").add(new Option(n, n));
+  });
+  document.getElementById("nowBtn").onclick = () => {
+    const text = document.getElementById("nowText").value.trim();
+    if (!text) { document.getElementById("nowText").focus(); return; }
+    statuses.me = { text, place: document.getElementById("nowPlace").value, at: Date.now() };
+    document.getElementById("nowText").value = "";
+    renderMap();
+  };
 
   function renderThread() {
     const t = threads[current];
@@ -361,6 +470,7 @@
         <div><b>${people[t.by].name}</b><span class="sub">${t.time} · 답장 ${t.replies.length}</span></div>
         <span style="margin-left:auto">${isDm() ? "" : stack(t)}</span></div>
       <h1>${esc(t.title)}</h1>
+      ${t.place ? `<span class="place-chip">📍 ${esc(t.place)}</span>` : ""}
       ${t.ref ? `<div class="ref"><span class="thumb" style="background-image:${t.ref.bg}"></span>
         <div><span class="sub">${esc(t.ref.room)}에서</span><b>${esc(t.ref.title)}</b></div></div>` : ""}
       ${isDm() ? "" : t.archivable
@@ -460,7 +570,9 @@
     if (!title && !pickedUrl) { draft.focus(); return; }
     threads.unshift({ by: "me", at: Date.now(), time: now(), title: title || "새 사진", unread: 0, tags: ["새 스레드"],
       photo: pickedUrl ? `url(${pickedUrl})` : null, color: pickColor(), replies: [],
-      archivable: document.getElementById("allowKeep").checked });
+      archivable: document.getElementById("allowKeep").checked,
+      place: document.getElementById("place").value || null });
+    document.getElementById("place").value = "";
     draft.value = ""; pickedUrl = null; picked.hidden = true;
     toggleSheet(false);
     renderHome();
