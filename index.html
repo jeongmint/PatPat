@@ -42,6 +42,7 @@
   .icon-btn { width: 40px; height: 40px; border-radius: 50%; background: #fff; border: 1px solid var(--line); color: var(--slate); font-size: 18px; }
   .seg { display: flex; padding: 3px; border-radius: 999px; background: #fff; border: 1px solid var(--line); }
   .seg button { font-size: 13px; padding: 6px 16px; border-radius: 999px; color: var(--slate); }
+  .seg svg { display: block; width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linejoin: round; }
   .seg button.on { background: var(--deep); color: #fff; }
   .tabs { display: flex; align-items: center; gap: 4px; padding: 6px 0 10px 20px; }
   .new { width: 30px; height: 30px; flex: none; border-radius: 50%; background: var(--deep); color: #fff; font-size: 16px; line-height: 1; }
@@ -189,7 +190,10 @@
   <section class="view home">
     <div class="top">
       <span class="me">나</span>
-      <div class="seg" id="seg"><button class="on" data-v="feed">피드</button><button data-v="map">지도</button></div>
+      <div class="seg" id="seg">
+        <button class="on" data-v="feed" aria-label="피드"><svg viewBox="0 0 24 24"><path d="M4 5h16v11H9l-5 4z"/></svg></button>
+        <button data-v="map" aria-label="지도"><svg viewBox="0 0 24 24"><path d="M3 6l6-2 6 2 6-2v14l-6 2-6-2-6 2z M9 4v14 M15 6v14"/></svg></button>
+      </div>
       <button class="icon-btn" aria-label="검색">⌕</button>
     </div>
     <div class="tabs">
