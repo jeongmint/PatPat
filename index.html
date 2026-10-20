@@ -89,7 +89,7 @@
   .tcard {
     flex: none; width: 230px; min-height: 260px; padding: 16px; color: #fff; text-align: left;
     background-size: cover; background-position: center; scroll-snap-align: start;
-    display: flex; flex-direction: column; gap: 10px;
+    display: flex; flex-direction: column; gap: 10px; text-shadow: 0 1px 3px #000c, 0 0 12px #0008;
   }
   .tcard .who-row { margin-bottom: auto; }
   .tcard .who-row b { display: block; font-size: 13px; }
@@ -460,7 +460,7 @@
     today.forEach(t => {
       const b = document.createElement("button");
       b.className = "tcard" + (t.photo ? "" : " text");
-      b.style.backgroundImage = `linear-gradient(#0000 35%, #0007), ${bg(t)}`;
+      b.style.backgroundImage = `linear-gradient(#0006, #0000 28%, #0003 50%, #000c), ${bg(t)}`;
       b.innerHTML = `
         <div class="who-row">${av(t.by)}
           <div><b>${people[t.by].name}</b><span class="sub">${t.time}${t.place ? ` · ${esc(t.place)}` : ""}</span></div>
