@@ -198,26 +198,44 @@
   .viewers { display: flex; align-items: center; flex-wrap: wrap; gap: 6px; padding: 10px 20px 12px; font-size: 12px; color: var(--slate); }
   .viewers button { display: inline-flex; align-items: center; gap: 4px; padding: 3px 10px 3px 3px; border-radius: 999px; border: 1px solid var(--line); background: #fff; opacity: .55; }
   .viewers button.on { opacity: 1; border-color: var(--deep); color: var(--ink); }
+  /* 미니홈피 */
+  .cy { display: flex; flex-direction: column; gap: 8px; padding: 12px; background: var(--cream); }
+  .cy-title { font-size: 13px; font-weight: 700; padding: 2px 4px; }
+  .cy-box { background: #fff; border: 1px solid var(--line); border-radius: 6px; }
+  .cy-profile { display: flex; gap: 14px; padding: 14px; }
+  .cy-pic { width: 96px; height: 96px; flex: none; border-radius: 6px; display: grid; place-items: center; font-size: 36px; color: #fff; }
+  .cy-info { min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+  .cy-today { font-size: 10px; letter-spacing: .04em; color: var(--slate); font-variant-numeric: tabular-nums; }
+  .cy-today b { color: #e2876a; }
+  .cy-info strong { font-size: 16px; margin-top: 4px; }
+  .cy-info p { font-size: 12px; color: var(--slate); line-height: 1.5; }
+  .cy-info .ilchon { margin-top: auto; font-size: 11px; color: var(--deep); }
+  .cy-stats { display: grid; grid-template-columns: 1fr 1fr; }
+  .cy-stats span { display: flex; justify-content: space-between; padding: 10px 14px; font-size: 12px; color: var(--deep); }
+  .cy-stats span:nth-child(odd) { border-right: 1px solid var(--line); }
+  .cy-stats span:nth-child(-n+2) { border-bottom: 1px solid var(--line); }
+  .cy-stats b { color: #e2876a; font-weight: 500; font-variant-numeric: tabular-nums; }
+  .cy-room-hd { display: flex; align-items: baseline; justify-content: space-between; padding: 10px 14px 8px; }
+  .cy-room-hd b { font-size: 13px; color: var(--deep); font-style: italic; }
+  .cy-room-hd span { font-size: 11px; color: var(--slate); }
   .board {
-    position: relative; aspect-ratio: 4 / 5; max-width: 100%; overflow: hidden; touch-action: none;
-    background: radial-gradient(#d6c7b066 1px, transparent 1.5px) 0 0 / 16px 16px, #f6f0e6;
-    border-block: 1px solid var(--line);
+    position: relative; aspect-ratio: 4 / 3; max-width: 100%; overflow: hidden; touch-action: none;
+    background:
+      linear-gradient(#0000 58%, #d9c8ad 58%, #d9c8ad 59%, #0000 59%),
+      repeating-linear-gradient(90deg, #f7f0e4 0 18px, #f3eadb 18px 36px) top / 100% 58% no-repeat,
+      repeating-conic-gradient(#ead9bf 0 25%, #e2cfb2 0 50%) 0 0 / 28px 28px;
   }
-  .profile { position: absolute; left: 6%; top: 5%; width: 52%; background: #fff; padding: 14px; border: 1px solid var(--line); }
-  .profile .av { width: 48px; height: 48px; font-size: 18px; }
-  .profile b { display: block; font-size: 16px; margin-top: 8px; }
-  .profile p { font-size: 13px; color: var(--slate); margin-top: 2px; }
   .item { position: absolute; transform: translate(-50%, -50%) rotate(var(--r)); user-select: none; }
   .item.mine-item { cursor: grab; }
   .item.memo { width: 120px; padding: 10px 10px 8px; font-size: 13px; line-height: 1.45; color: var(--ink); box-shadow: 0 4px 10px #6b728026; }
   .item.memo .by { display: flex; align-items: center; gap: 4px; font-size: 10px; color: var(--slate); margin-top: 6px; }
   .item.sticker { font-size: 42px; line-height: 1; filter: drop-shadow(0 3px 4px #0002); }
   .locked { padding: 60px 20px; text-align: center; color: var(--slate); font-size: 14px; }
-  .tools { display: flex; flex-wrap: wrap; align-items: center; gap: 4px; padding: 10px 12px; border-bottom: 1px solid var(--line); background: #fff; }
+  .tools { display: flex; flex-wrap: wrap; align-items: center; gap: 4px; padding: 8px 10px; border-top: 1px solid var(--line); }
   .tools .emo { font-size: 21px; width: 34px; height: 34px; border-radius: 50%; }
   .tools .emo:hover { background: var(--cream); }
   .tools .memo-btn { margin-left: auto; height: 36px; padding: 0 14px; background: var(--deep); color: #fff; font-size: 13px; }
-  .memo-form { display: flex; align-items: stretch; border-bottom: 1px solid var(--line); background: #fff; }
+  .memo-form { display: flex; align-items: stretch; border-top: 1px solid var(--line); }
   .memo-form textarea { flex: 1; padding: 12px 16px; font-size: 14px; }
   .memo-form .colors { display: flex; flex-direction: column; justify-content: center; gap: 4px; padding: 0 8px; }
   .memo-form .colors button { width: 18px; height: 18px; border: 2px solid transparent; }
@@ -325,16 +343,32 @@
         <div class="homes" id="homes"></div>
         <div class="viewers" id="viewers"></div>
       </div>
-      <div class="tools" id="tools">
-        <span id="emos"></span>
-        <button class="memo-btn" id="memoBtn">메모 붙이기</button>
+      <div class="cy" id="cy">
+        <div class="cy-title" id="cyTitle"></div>
+        <div class="cy-box cy-profile">
+          <span class="cy-pic" id="cyPic"></span>
+          <div class="cy-info">
+            <span class="cy-today" id="cyToday"></span>
+            <strong id="cyName"></strong>
+            <p id="cyBio"></p>
+            <span class="ilchon" id="cyIlchon"></span>
+          </div>
+        </div>
+        <div class="cy-box cy-stats" id="cyStats"></div>
+        <div class="cy-box" id="cyRoom">
+          <div class="cy-room-hd"><b>Mini Room</b><span>방명록 메모 · 스티커</span></div>
+          <div class="board" id="board"></div>
+          <div class="tools" id="tools">
+            <span id="emos"></span>
+            <button class="memo-btn" id="memoBtn">메모 붙이기</button>
+          </div>
+          <div class="memo-form" id="memoForm" hidden>
+            <textarea id="memoText" rows="2" maxlength="60" placeholder="메모를 남겨요"></textarea>
+            <div class="colors" id="memoColors"></div>
+            <button class="send" id="memoPost">붙이기</button>
+          </div>
+        </div>
       </div>
-      <div class="memo-form" id="memoForm" hidden>
-        <textarea id="memoText" rows="2" maxlength="60" placeholder="메모를 남겨요"></textarea>
-        <div class="colors" id="memoColors"></div>
-        <button class="send" id="memoPost">붙이기</button>
-      </div>
-      <div class="board" id="board"></div>
       <div class="locked" id="locked" hidden></div>
       <p class="hint">내가 붙인 메모와 스티커는 끌어서 옮길 수 있어요.</p>
     </div>
@@ -766,7 +800,12 @@
       const b = document.createElement("button");
       if (id === owner) b.className = "on";
       b.innerHTML = `${av(id)}${id === "me" ? "내 홈" : people[id].name}`;
-      b.onclick = () => { owner = id; homeIdx = 0; renderMine(); };
+      b.onclick = () => {
+        owner = id; homeIdx = 0;
+        const h = visibleHomes(id)[0];
+        if (h && id !== "me") { h.today = (h.today || 3 + h.name.length * 4) + 1; h.total = (h.total || h.today * 37) + 1; }
+        renderMine();
+      };
       ow.appendChild(b);
     });
 
@@ -809,15 +848,30 @@
 
     const board = document.getElementById("board");
     const locked = document.getElementById("locked");
-    board.hidden = !home;
-    document.getElementById("tools").hidden = !home;
+    document.getElementById("cy").hidden = !home;
     locked.hidden = !!home;
     if (!home) {
       document.getElementById("memoForm").hidden = true;
       locked.textContent = `${people[owner].name}의 홈은 아직 나에게 열려 있지 않아요`;
       return;
     }
-    board.innerHTML = `<div class="profile">${av(owner)}<b>${esc(home.name)}</b><p>${esc(home.bio || "소개가 아직 없어요")}</p></div>`;
+    // 미니홈피 프로필: 방문 수, 일촌(볼 수 있는 사람), 사진첩·방명록 수
+    home.today = home.today || 3 + home.name.length * 4;
+    home.total = home.total || home.today * 37;
+    const memos = home.items.filter(i => i.type === "memo").length;
+    const photos = rooms.flatMap(r => r.threads).filter(t => t.by === owner && t.photo).length;
+    document.getElementById("cyTitle").textContent = `${home.name} · ${home.bio || "소개가 아직 없어요"}`;
+    const pic = document.getElementById("cyPic");
+    pic.style.background = people[owner].color;
+    pic.textContent = people[owner].name[0];
+    document.getElementById("cyToday").innerHTML = `TODAY <b>${home.today}</b> | TOTAL ${home.total}`;
+    document.getElementById("cyName").textContent = people[owner].name;
+    document.getElementById("cyBio").textContent = home.bio || "소개가 아직 없어요";
+    document.getElementById("cyIlchon").textContent = `일촌 ${home.viewers.length}`;
+    document.getElementById("cyStats").innerHTML = `
+      <span>사진첩 <b>${photos}</b></span><span>방명록 <b>${memos}</b></span>
+      <span>스티커 <b>${home.items.length - memos}</b></span><span>홈 <b>${list.length}</b></span>`;
+    board.innerHTML = "";
     home.items.forEach(it => {
       const d = document.createElement("div");
       d.className = `item ${it.type}` + (it.by === "me" ? " mine-item" : "");
