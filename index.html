@@ -1,0 +1,256 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PatPat</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Gowun+Dodum&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --mint: #BFEFE0;
+    --teal: #87CBB9;
+    --sand: #D6C7B0;
+    --cream: #F3EDE2;
+    --slate: #6B7280;
+    --ink: #3f4450;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; }
+  body {
+    background: var(--cream);
+    color: var(--ink);
+    font-family: "Gowun Dodum", system-ui, sans-serif;
+    display: flex; justify-content: center;
+    transition: background .8s ease;
+  }
+  body.warm { background: #f7e9d6; }
+
+  .app {
+    width: 100%; max-width: 560px; height: 100%;
+    display: flex; flex-direction: column;
+  }
+
+  /* 상단 */
+  header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 18px 20px 12px;
+  }
+  .room h1 { font-size: 20px; font-weight: 400; letter-spacing: -0.02em; }
+  .room p { font-size: 13px; color: var(--slate); margin-top: 2px; }
+  .modes { display: flex; background: #fff8; border-radius: 999px; padding: 3px; }
+  .modes button {
+    border: 0; background: none; font: inherit; font-size: 13px; color: var(--slate);
+    padding: 6px 12px; border-radius: 999px; cursor: pointer;
+  }
+  .modes button.on { background: var(--teal); color: #fff; }
+
+  /* 흐름형: 모두 왼쪽 정렬, 말풍선 없음 */
+  .flow {
+    flex: 1; overflow-y: auto; padding: 8px 20px 24px;
+    display: flex; flex-direction: column; gap: 4px;
+  }
+  .day {
+    align-self: center; font-size: 12px; color: var(--slate);
+    margin: 14px 0 8px; opacity: .8;
+  }
+  .line {
+    display: grid; grid-template-columns: 10px 1fr; gap: 12px;
+    padding: 6px 0; animation: rise .35s ease both;
+  }
+  .line .dot { width: 10px; height: 10px; border-radius: 50%; margin-top: 7px; }
+  .line .who { font-size: 12px; color: var(--slate); margin-bottom: 2px; }
+  .line .text { font-size: 16px; line-height: 1.6; white-space: pre-wrap; word-break: break-word; }
+  .line.cont { padding-top: 0; }
+  .line.cont .who { display: none; }
+  .line.cont .dot { visibility: hidden; }
+  .me .dot { background: var(--teal); }
+  .you .dot { background: var(--sand); }
+  .line.pat .text { color: var(--teal); font-size: 14px; }
+
+  /* 카드형: 한 장씩 */
+  .cards {
+    flex: 1; display: none; flex-direction: column; align-items: center; justify-content: center;
+    padding: 20px; gap: 18px;
+  }
+  .card {
+    width: 100%; min-height: 260px; border-radius: 24px; padding: 28px;
+    display: flex; flex-direction: column; justify-content: space-between;
+    box-shadow: 0 10px 30px #6b728022; animation: rise .35s ease both;
+  }
+  .card.me { background: var(--mint); }
+  .card.you { background: #fff; border: 1px solid var(--sand); }
+  .card .text { font-size: 22px; line-height: 1.6; }
+  .card .who { font-size: 13px; color: var(--slate); }
+  .nav { display: flex; align-items: center; gap: 16px; color: var(--slate); font-size: 13px; }
+  .nav button {
+    width: 40px; height: 40px; border-radius: 50%; border: 1px solid var(--sand);
+    background: #fff; font-size: 16px; color: var(--slate); cursor: pointer;
+  }
+  .app.card-mode .flow { display: none; }
+  .app.card-mode .cards { display: flex; }
+
+  /* 입력 */
+  footer { padding: 10px 16px 18px; display: flex; gap: 10px; align-items: flex-end; }
+  .pat {
+    width: 48px; height: 48px; flex: none; border-radius: 50%; border: 0;
+    background: var(--sand); color: #fff; font-size: 22px; cursor: pointer;
+    transition: transform .15s ease;
+  }
+  .pat:active { transform: scale(.88); }
+  .input {
+    flex: 1; display: flex; align-items: flex-end; background: #fff;
+    border-radius: 24px; padding: 6px 6px 6px 18px; border: 1px solid #d6c7b088;
+  }
+  textarea {
+    flex: 1; border: 0; outline: 0; resize: none; background: none;
+    font: inherit; font-size: 16px; color: var(--ink); line-height: 1.5;
+    padding: 6px 0; max-height: 120px;
+  }
+  .send {
+    border: 0; background: var(--teal); color: #fff; font: inherit; font-size: 14px;
+    padding: 9px 16px; border-radius: 18px; cursor: pointer;
+  }
+
+  /* 토닥 효과 */
+  .ripple {
+    position: fixed; border-radius: 50%; pointer-events: none;
+    background: radial-gradient(circle, #87cbb966, #bfefe000 70%);
+    width: 40px; height: 40px; transform: translate(-50%, -50%);
+    animation: ripple 1.2s ease-out forwards;
+  }
+  @keyframes ripple { to { width: 900px; height: 900px; opacity: 0; } }
+  @keyframes rise { from { opacity: 0; transform: translateY(6px); } }
+</style>
+</head>
+<body>
+<div class="app" id="app">
+  <header>
+    <div class="room">
+      <h1>민트</h1>
+      <p id="status">함께 있어요</p>
+    </div>
+    <div class="modes">
+      <button class="on" data-mode="flow">흐름</button>
+      <button data-mode="card">카드</button>
+    </div>
+  </header>
+
+  <main class="flow" id="flow"></main>
+
+  <section class="cards" id="cards">
+    <div id="cardSlot" style="width:100%"></div>
+    <div class="nav">
+      <button id="prev" aria-label="이전">←</button>
+      <span id="count"></span>
+      <button id="next" aria-label="다음">→</button>
+    </div>
+  </section>
+
+  <footer>
+    <button class="pat" id="pat" title="토닥토닥">🤲</button>
+    <div class="input">
+      <textarea id="msg" rows="1" placeholder="천천히 이야기해요"></textarea>
+      <button class="send" id="send">보내기</button>
+    </div>
+  </footer>
+</div>
+
+<script>
+  const names = { me: "나", you: "민트" };
+  const messages = [
+    { from: "you", text: "오늘 하루 어땠어?" },
+    { from: "me", text: "좀 길었어. 회의가 계속 이어져서" },
+    { from: "me", text: "그래도 퇴근길 하늘이 예뻤어" },
+    { from: "you", text: "그런 날엔 하늘이 위로가 되더라" },
+    { from: "you", type: "pat", text: "민트가 토닥토닥 해줬어요" },
+  ];
+  const replies = ["응, 듣고 있어", "그랬구나", "천천히 말해도 돼", "고마워, 말해줘서"];
+
+  const app = document.getElementById("app");
+  const flow = document.getElementById("flow");
+  const msg = document.getElementById("msg");
+  let mode = "flow", cardIdx = messages.length - 1;
+
+  function renderFlow() {
+    flow.innerHTML = '<div class="day">오늘</div>';
+    messages.forEach((m, i) => {
+      const prev = messages[i - 1];
+      const cont = prev && prev.from === m.from && !m.type && !prev.type;
+      const el = document.createElement("div");
+      el.className = `line ${m.from}${cont ? " cont" : ""}${m.type === "pat" ? " pat" : ""}`;
+      el.innerHTML = `<span class="dot"></span><div><div class="who"></div><div class="text"></div></div>`;
+      el.querySelector(".who").textContent = names[m.from];
+      el.querySelector(".text").textContent = m.type === "pat" ? "· " + m.text + " ·" : m.text;
+      flow.appendChild(el);
+    });
+    flow.scrollTop = flow.scrollHeight;
+  }
+
+  function renderCard() {
+    const m = messages[cardIdx];
+    const slot = document.getElementById("cardSlot");
+    slot.innerHTML = `<div class="card ${m.from}"><div class="text"></div><div class="who"></div></div>`;
+    slot.querySelector(".text").textContent = m.text;
+    slot.querySelector(".who").textContent = "— " + names[m.from];
+    document.getElementById("count").textContent = `${cardIdx + 1} / ${messages.length}`;
+  }
+
+  function render() { mode === "flow" ? renderFlow() : renderCard(); }
+
+  function add(m) {
+    messages.push(m);
+    cardIdx = messages.length - 1;
+    render();
+  }
+
+  function send() {
+    const text = msg.value.trim();
+    if (!text) return;
+    add({ from: "me", text });
+    msg.value = ""; msg.style.height = "auto";
+    const status = document.getElementById("status");
+    status.textContent = "민트가 생각하는 중…";
+    setTimeout(() => {
+      status.textContent = "함께 있어요";
+      add({ from: "you", text: replies[Math.floor(Math.random() * replies.length)] });
+    }, 1200);
+  }
+
+  function pat(e) {
+    const r = document.createElement("div");
+    r.className = "ripple";
+    const b = e.currentTarget.getBoundingClientRect();
+    r.style.left = b.left + b.width / 2 + "px";
+    r.style.top = b.top + b.height / 2 + "px";
+    document.body.appendChild(r);
+    setTimeout(() => r.remove(), 1300);
+    document.body.classList.add("warm");
+    setTimeout(() => document.body.classList.remove("warm"), 1500);
+    if (navigator.vibrate) navigator.vibrate([30, 60, 30]);
+    add({ from: "me", type: "pat", text: "민트를 토닥토닥 해줬어요" });
+  }
+
+  document.getElementById("send").onclick = send;
+  document.getElementById("pat").onclick = pat;
+  msg.addEventListener("keydown", e => {
+    if (e.key === "Enter" && !e.shiftKey && !e.isComposing) { e.preventDefault(); send(); }
+  });
+  msg.addEventListener("input", () => {
+    msg.style.height = "auto";
+    msg.style.height = msg.scrollHeight + "px";
+  });
+  document.querySelectorAll(".modes button").forEach(b => b.onclick = () => {
+    document.querySelectorAll(".modes button").forEach(x => x.classList.toggle("on", x === b));
+    mode = b.dataset.mode;
+    app.classList.toggle("card-mode", mode === "card");
+    cardIdx = messages.length - 1;
+    render();
+  });
+  document.getElementById("prev").onclick = () => { if (cardIdx > 0) { cardIdx--; renderCard(); } };
+  document.getElementById("next").onclick = () => { if (cardIdx < messages.length - 1) { cardIdx++; renderCard(); } };
+
+  render();
+</script>
+</body>
+</html>
