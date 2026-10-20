@@ -7,6 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
 <style>
+  /* 꽉 채운 직사각형 그리드. 모서리·그림자 없이 1px 선으로만 구분 */
   :root {
     --mint: #BFEFE0;
     --teal: #87CBB9;
@@ -15,225 +16,203 @@
     --cream: #F3EDE2;
     --slate: #6B7280;
     --ink: #2f3440;
-    --card: #fbf8f3;
-    --shadow: 0 8px 20px #6b72801f, 0 1px 2px #6b728014;
+    --paper: #faf7f2;
+    --line: #e2d8c8;
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
   [hidden] { display: none !important; }
   html, body { height: 100%; }
   body {
     background: var(--cream); color: var(--ink);
-    font-family: "Noto Sans KR", system-ui, sans-serif; letter-spacing: -0.01em;
+    font-family: "Noto Sans KR", system-ui, sans-serif; letter-spacing: -0.02em;
     display: flex; justify-content: center; overflow: hidden;
   }
-  button { font: inherit; color: inherit; cursor: pointer; border: 0; background: none; }
-  .app { position: relative; width: 100%; max-width: 480px; height: 100%; overflow: hidden; }
-  .view { position: absolute; inset: 0; display: flex; flex-direction: column; background: var(--cream); transition: transform .3s ease; }
-  .thread {
-    transform: translateX(100%); color: #fff;
-    background-color: var(--slate); background-size: cover; background-position: center;
-  }
-  .bars { display: flex; gap: 4px; padding: 12px 20px 0; }
-  .bars i { flex: 1; height: 3px; border-radius: 3px; background: #fff6; }
-  .bars i.on { background: #fff; }
-  .thread .icon-btn { background: #0003; color: #fff; box-shadow: none; backdrop-filter: blur(8px); }
-  .thread .sub { color: #ffffffcc; }
-  .thread .t-head h1 { text-shadow: 0 1px 8px #0005; }
-  .thread .chip { background: #ffffff33; color: #fff; box-shadow: none; backdrop-filter: blur(8px); }
-  .thread .chip.on { background: #fff; color: var(--ink); }
-  .thread .replies { justify-content: flex-end; min-height: 50%; }
-  .thread .bubble { background: #ffffffd9; color: var(--ink); backdrop-filter: blur(12px); box-shadow: none; }
-  .thread .reply.me .bubble { background: #bfefe0e6; }
-  .thread .pill { background: #0000004d; backdrop-filter: blur(8px); }
-  .thread .reply.me .pill { background: #87cbb9cc; }
-  .thread .input { background: #ffffffe6; backdrop-filter: blur(12px); }
+  button { font: inherit; color: inherit; cursor: pointer; border: 0; background: none; border-radius: 0; }
+  :focus-visible { outline: 2px solid var(--deep); outline-offset: -2px; }
+  .app { position: relative; width: 100%; max-width: 480px; height: 100%; overflow: hidden; background: var(--paper); border-inline: 1px solid var(--line); }
+  .view { position: absolute; inset: 0; display: flex; flex-direction: column; background: var(--paper); transition: transform .28s ease; }
+  .thread { transform: translateX(100%); }
   .app.open .thread { transform: none; }
   .app.open .home { transform: translateX(-25%); }
+  .scroll { flex: 1; overflow-y: auto; }
 
-  /* 공통 */
-  .top { display: flex; align-items: center; justify-content: space-between; padding: 20px 20px 8px; }
-  .icon-btn {
-    width: 40px; height: 40px; border-radius: 12px; background: var(--card);
-    box-shadow: var(--shadow); display: grid; place-items: center; color: var(--slate); font-size: 18px;
-  }
-  .scroll { flex: 1; overflow-y: auto; padding-bottom: 28px; }
-  .av {
-    width: 28px; height: 28px; border-radius: 50%; display: inline-grid; place-items: center;
-    font-size: 12px; font-weight: 500; color: #fff; border: 2px solid var(--card); flex: none;
-  }
-  .stack { display: flex; align-items: center; }
-  .stack .av { margin-left: -8px; }
-  .stack .av:first-child { margin-left: 0; }
-  .stack small { margin-left: 6px; font-size: 12px; color: inherit; opacity: .8; }
-  .thumb { width: 36px; height: 36px; border-radius: 10px; flex: none; background-size: cover; background-position: center; }
-  .plus {
-    width: 34px; height: 34px; border-radius: 50%; border: 1.5px solid currentColor;
-    display: grid; place-items: center; font-size: 18px; line-height: 1;
-  }
-  .count {
-    min-width: 26px; height: 26px; padding: 0 8px; border-radius: 999px; background: var(--teal);
-    color: #fff; font-size: 12px; font-weight: 700; display: grid; place-items: center;
-  }
-
-  /* 홈 */
-  .hello { padding: 8px 0 16px; }
-  .hello p { color: var(--slate); font-size: 15px; }
-  .hello h1 { font-size: 23px; font-weight: 700; margin-top: 2px; }
-  .hello-row { display: flex; align-items: center; gap: 4px; padding-left: 20px; }
-  .new {
-    width: 30px; height: 30px; flex: none; border-radius: 50%; background: var(--deep); color: #fff;
-    font-size: 16px; line-height: 1; box-shadow: 0 4px 10px #4f9a8744;
-  }
-  .rail { display: flex; gap: 14px; overflow-x: auto; padding: 4px 20px 16px; scroll-snap-type: x mandatory; scroll-padding-inline: 20px; }
-  .rail::-webkit-scrollbar { display: none; }
-  .tcard {
-    flex: none; width: 220px; border-radius: 22px; padding: 16px; text-align: left;
-    background: var(--card); box-shadow: var(--shadow); scroll-snap-align: start;
-    display: flex; flex-direction: column; gap: 12px;
-  }
-  .tcard.photo {
-    width: 230px; min-height: 250px; color: #fff; justify-content: flex-end;
-    background-size: cover; background-position: center;
-  }
-  .tcard.photo .who-row { margin-bottom: auto; }
-  .tcard.photo .sub, .tcard.photo .last { color: #ffffffd9; }
-  .tcard.photo .av { border-color: #fff6; }
-  .tcard.photo h3 { font-size: 18px; text-shadow: 0 1px 6px #0004; }
-  .who-row { display: flex; align-items: center; gap: 10px; }
-  .who-row b { font-size: 13px; font-weight: 700; display: block; }
-  .sub { font-size: 11px; color: var(--slate); }
-  .tcard h3 { font-size: 16px; font-weight: 700; line-height: 1.35; }
-  .last { font-size: 12px; color: var(--slate); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .tcard .foot { display: flex; align-items: center; justify-content: space-between; }
-  .unread { display: inline-flex; align-items: center; gap: 6px; font-size: 11px; }
-  .unread i { width: 7px; height: 7px; border-radius: 50%; background: #f0a58a; }
-
-  .sec { display: flex; align-items: center; justify-content: space-between; padding: 8px 20px 10px; }
-  .sec h2 { font-size: 13px; font-weight: 500; color: var(--slate); letter-spacing: 0.04em; }
-  .sec .count { min-width: 20px; height: 20px; padding: 0 6px; font-size: 11px; }
-  .rooms { flex: 1; min-width: 0; display: flex; gap: 8px; overflow-x: auto; padding: 6px 20px 8px 4px; scroll-snap-type: x proximity; }
+  /* 상단 */
+  .top { display: flex; align-items: center; height: 52px; border-bottom: 1px solid var(--line); }
+  .logo { font-weight: 700; font-size: 17px; padding: 0 16px; letter-spacing: -0.04em; }
+  .seg { display: flex; height: 100%; margin-left: auto; }
+  .seg button { padding: 0 16px; font-size: 13px; color: var(--slate); border-left: 1px solid var(--line); }
+  .seg button.on { background: var(--ink); color: #fff; }
+  .tabs { display: flex; height: 44px; border-bottom: 1px solid var(--line); }
+  .new { width: 44px; flex: none; font-size: 20px; font-weight: 400; background: var(--deep); color: #fff; }
+  .new[aria-expanded="true"] { background: var(--ink); }
+  .rooms { flex: 1; min-width: 0; display: flex; overflow-x: auto; }
   .rooms::-webkit-scrollbar { display: none; }
-  .rooms button { flex: none; white-space: nowrap; scroll-snap-align: start; }
-  .rooms button { font-size: 13px; padding: 6px 14px; border-radius: 999px; background: var(--card); box-shadow: var(--shadow); color: var(--slate); }
-  .rooms button.on { background: var(--deep); color: #fff; }
-  .empty { font-size: 13px; color: var(--slate); padding: 18px; border-radius: 18px; border: 1.5px dashed var(--sand); text-align: center; flex: 1; }
-  .tcard.text h3 { font-size: 22px; line-height: 1.3; text-shadow: none; }
-  .sheet { margin: 0 20px 16px; padding: 14px; border-radius: 20px; background: var(--card); box-shadow: var(--shadow); display: flex; flex-direction: column; gap: 10px; }
-  .sheet textarea { width: 100%; min-height: 64px; }
-  .sheet-row { display: flex; align-items: center; gap: 8px; }
-  .sheet-row .picked { width: 32px; height: 32px; border-radius: 8px; background-size: cover; background-position: center; }
-  .sheet-row .send { margin-left: auto; }
-  .ghost { font-size: 13px; padding: 7px 12px; border-radius: 999px; border: 1px solid var(--sand); color: var(--slate); }
-  .rooms .av { width: 20px; height: 20px; font-size: 10px; border: 0; margin-right: 4px; vertical-align: -5px; }
-  .dm-btn { margin-top: 12px; font-size: 13px; padding: 7px 14px; border-radius: 999px; background: #ffffffe6; color: var(--ink); }
-  .ref { display: flex; align-items: center; gap: 10px; margin-top: 12px; padding: 8px 12px 8px 8px; border-radius: 14px; background: #ffffff33; backdrop-filter: blur(8px); width: fit-content; max-width: 100%; }
-  .ref b { display: block; font-size: 13px; font-weight: 500; }
-  .toggle { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; color: var(--slate); }
-  .toggle input { accent-color: var(--deep); width: 16px; height: 16px; }
-  .keep-btn { margin-top: 12px; margin-right: 6px; font-size: 13px; padding: 7px 14px; border-radius: 999px; background: #ffffff33; color: #fff; backdrop-filter: blur(8px); }
-  .keep-btn.on { background: #fff; color: var(--ink); }
-  .keep-note { display: inline-block; margin-top: 12px; font-size: 12px; color: #ffffffcc; }
-  .pin { font-size: 11px; color: var(--slate); }
-  .seg { display: flex; padding: 3px; border-radius: 999px; background: var(--card); box-shadow: var(--shadow); }
-  .seg button { font-size: 13px; padding: 6px 16px; border-radius: 999px; color: var(--slate); }
-  .seg button.on { background: var(--deep); color: #fff; }
-  .map-wrap { margin: 0 20px; position: relative; aspect-ratio: 4 / 5; max-width: 100%; border-radius: 24px; overflow: hidden; box-shadow: var(--shadow); background: #f7f2ea; }
-  .map-wrap svg { position: absolute; inset: 0; width: 100%; height: 100%; }
-  .map-wrap svg text { font-family: inherit; font-size: 3.2px; fill: var(--slate); }
-  .mk { position: absolute; transform: translate(-50%, -50%); display: flex; flex-direction: column; align-items: center; gap: 3px; }
-  .mk .ph { width: 46px; height: 46px; border-radius: 50%; border: 3px solid #fff; background-size: cover; background-position: center; box-shadow: 0 4px 12px #0003; }
-  .mk .tag { font-size: 11px; padding: 2px 8px; border-radius: 999px; background: #fff; color: var(--ink); box-shadow: var(--shadow); white-space: nowrap; max-width: 130px; overflow: hidden; text-overflow: ellipsis; }
-  .mk.st { flex-direction: row; gap: 4px; }
-  .mk.st .av { width: 32px; height: 32px; font-size: 13px; border: 2px solid #fff; box-shadow: 0 3px 8px #0002; }
-  .mk.st .tag { font-size: 12px; }
-  .mk.st.me .tag { background: var(--mint); }
-  .now { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin: 14px 20px 0; padding: 10px 12px; border-radius: 18px; background: var(--card); box-shadow: var(--shadow); }
-  .now input { flex: 1; min-width: 120px; border: 0; outline: 0; background: none; font: inherit; font-size: 14px; color: var(--ink); }
-  .now select, .sheet select { font: inherit; font-size: 13px; border: 1px solid var(--sand); border-radius: 999px; padding: 5px 8px; background: #fff; color: var(--slate); }
-  .map-note { font-size: 12px; color: var(--slate); margin: 10px 20px 0; }
-  .place-chip { display: inline-block; margin-top: 8px; font-size: 12px; padding: 3px 10px; border-radius: 999px; background: #ffffff33; backdrop-filter: blur(8px); }
-  .left { font-size: 11px; padding: 2px 8px; border-radius: 999px; background: #0003; backdrop-filter: blur(6px); margin-left: auto; align-self: flex-start; }
-  .list { display: flex; flex-direction: column; gap: 10px; padding: 0 20px; }
-  .row {
-    display: flex; align-items: center; gap: 12px; padding: 12px; border-radius: 18px;
-    background: var(--card); box-shadow: var(--shadow); text-align: left; width: 100%;
+  .rooms button {
+    flex: none; padding: 0 14px; font-size: 14px; color: var(--slate); white-space: nowrap;
+    border-right: 1px solid var(--line); display: flex; align-items: center; gap: 6px;
   }
+  .rooms button.on { color: var(--ink); font-weight: 700; box-shadow: inset 0 -2px var(--deep); }
+
+  .av {
+    width: 28px; height: 28px; border-radius: 4px; display: inline-grid; place-items: center;
+    font-size: 12px; font-weight: 500; color: #fff; flex: none;
+  }
+  .av.s { width: 20px; height: 20px; font-size: 10px; border-radius: 3px; }
+  .stack { display: flex; gap: 2px; }
+
+  /* 작성 */
+  .sheet { border-bottom: 1px solid var(--line); background: #fff; }
+  .sheet textarea { display: block; width: 100%; padding: 14px 16px; min-height: 72px; }
+  .sheet-row { display: flex; flex-wrap: wrap; border-top: 1px solid var(--line); }
+  .sheet-row > * { height: 40px; border-right: 1px solid var(--line); font-size: 13px; color: var(--slate); }
+  .sheet-row .picked { width: 40px; background-size: cover; background-position: center; }
+  .sheet-row label { display: inline-flex; align-items: center; gap: 6px; padding: 0 12px; }
+  .sheet-row input { accent-color: var(--deep); }
+  .sheet-row button.ghost { padding: 0 12px; }
+  .sheet-row .send { margin-left: auto; border-right: 0; }
+  select { font: inherit; font-size: 13px; color: var(--slate); border: 0; background: none; padding: 0 10px; border-radius: 0; }
+  textarea, .now input {
+    border: 0; outline: 0; resize: none; background: none; font: inherit; font-size: 15px; color: var(--ink); line-height: 1.5;
+  }
+  .send { background: var(--ink); color: #fff; font-size: 14px; font-weight: 500; padding: 0 18px; }
+
+  /* 피드: 2열 모자이크 */
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 2px; background: var(--line); }
+  .tile {
+    position: relative; aspect-ratio: 3 / 4; background-size: cover; background-position: center;
+    color: #fff; text-align: left; display: flex; flex-direction: column; justify-content: flex-end; padding: 12px; gap: 4px; min-width: 0;
+  }
+  .tile:first-child { grid-column: span 2; aspect-ratio: 16 / 11; }
+  .tile.text h3 { font-size: 20px; }
+  .tile:first-child h3 { font-size: 22px; }
+  .tile h3 { font-size: 16px; font-weight: 700; line-height: 1.3; }
+  .tile .meta { display: flex; align-items: center; gap: 6px; font-size: 11px; opacity: .9; }
+  .tile .last { font-size: 12px; opacity: .85; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .badges { position: absolute; top: 0; right: 0; display: flex; }
+  .badges span { font-size: 11px; padding: 4px 8px; background: #0006; }
+  .badges .n { background: var(--deep); font-weight: 700; }
+  .empty { padding: 28px 16px; font-size: 13px; color: var(--slate); background: var(--paper); grid-column: span 2; }
+
+  .sec { display: flex; align-items: baseline; gap: 8px; padding: 22px 16px 8px; border-bottom: 1px solid var(--line); }
+  .sec h2 { font-size: 12px; font-weight: 500; color: var(--slate); letter-spacing: 0.06em; text-transform: uppercase; }
+  .sec span { font-size: 12px; color: var(--slate); }
+  .row { display: flex; gap: 12px; width: 100%; padding: 10px 16px; border-bottom: 1px solid var(--line); text-align: left; align-items: center; }
+  .thumb { width: 48px; height: 48px; flex: none; background-size: cover; background-position: center; }
   .row .mid { flex: 1; min-width: 0; }
   .row h4 { font-size: 14px; font-weight: 500; }
+  .row .last, .row .pin { font-size: 12px; color: var(--slate); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .row .time { font-size: 11px; color: var(--slate); align-self: flex-start; }
 
-  /* 스레드 */
-  .t-head { padding: 4px 20px 14px; }
-  .t-head h1 { font-size: 21px; font-weight: 700; margin-top: 10px; line-height: 1.35; }
-  .chips { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px; }
-  .chip { font-size: 12px; padding: 5px 12px; border-radius: 999px; background: var(--card); color: var(--slate); box-shadow: var(--shadow); }
-  .chip.on { background: var(--deep); color: #fff; }
-  .replies { display: flex; flex-direction: column; gap: 14px; padding: 0 20px; }
-  .reply { display: grid; grid-template-columns: 58px 1fr; gap: 10px; align-items: start; animation: rise .3s ease both; }
-  .pill {
-    font-size: 11px; font-weight: 500; text-align: center; padding: 5px 0; border-radius: 999px;
-    background: var(--sand); color: #fff; margin-top: 12px;
-  }
-  .bubble { background: var(--card); border-radius: 18px; padding: 12px 14px; box-shadow: var(--shadow); }
-  .reply.me .bubble { background: var(--mint); }
-  .reply.me .pill { background: var(--teal); }
-  .bubble .who-row { gap: 8px; }
-  .bubble .who-row .av { width: 24px; height: 24px; font-size: 11px; border: 0; }
-  .bubble p { font-size: 15px; line-height: 1.55; margin-top: 6px; white-space: pre-wrap; word-break: break-word; }
-  .reacts { display: flex; gap: 6px; margin-top: 8px; flex-wrap: wrap; }
-  .react { font-size: 12px; padding: 2px 9px; border-radius: 999px; background: #fff9; border: 1px solid #d6c7b0aa; color: var(--slate); }
-  .react.on { background: var(--teal); border-color: var(--teal); color: #fff; }
+  /* 지도 */
+  .map-wrap { position: relative; aspect-ratio: 4 / 5; max-width: 100%; background: #f6f1e8; border-bottom: 1px solid var(--line); overflow: hidden; }
+  .map-wrap svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+  .map-wrap svg text { font-family: inherit; font-size: 3.2px; fill: var(--slate); }
+  .mk { position: absolute; transform: translate(-50%, -50%); display: flex; align-items: center; gap: 0; text-align: left; }
+  .mk .ph { width: 44px; height: 44px; border: 2px solid #fff; background-size: cover; background-position: center; flex: none; }
+  .mk .tag { display: flex; flex-direction: column; font-size: 11px; padding: 4px 8px; background: #fff; color: var(--ink); white-space: nowrap; max-width: 150px; border: 1px solid var(--line); }
+  .mk .tag span { overflow: hidden; text-overflow: ellipsis; }
+  .mk .song { color: var(--deep); font-size: 10px; }
+  .mk .av { width: 30px; height: 30px; border: 2px solid #fff; border-radius: 0; box-sizing: content-box; }
+  .mk.me .tag { background: var(--mint); }
+  .mk.with .av { outline: 2px solid var(--deep); }
+  .now { display: flex; border-bottom: 1px solid var(--line); background: #fff; min-height: 44px; }
+  .now input { flex: 1; min-width: 0; padding: 0 16px; font-size: 14px; }
+  .now select { border-left: 1px solid var(--line); }
+  .music-row { display: flex; align-items: center; gap: 10px; padding: 10px 16px; border-bottom: 1px solid var(--line); font-size: 13px; color: var(--slate); }
+  .music-row b { color: var(--ink); font-weight: 500; }
+  .switch { margin-left: auto; width: 40px; height: 22px; background: var(--line); position: relative; }
+  .switch::after { content: ""; position: absolute; top: 3px; left: 3px; width: 16px; height: 16px; background: #fff; transition: left .2s; }
+  .switch[aria-pressed="true"] { background: var(--deep); }
+  .switch[aria-pressed="true"]::after { left: 21px; }
+  .map-note { font-size: 11px; color: var(--slate); padding: 10px 16px 24px; }
 
-  footer { padding: 10px 16px 18px; }
-  .input {
-    display: flex; align-items: flex-end; gap: 8px; background: var(--card); box-shadow: var(--shadow);
-    border-radius: 22px; padding: 6px 6px 6px 16px;
-  }
-  textarea {
-    flex: 1; border: 0; outline: 0; resize: none; background: none; font: inherit;
-    font-size: 15px; color: var(--ink); line-height: 1.5; padding: 7px 0; max-height: 120px;
-  }
-  .send { background: var(--deep); color: #fff; font-size: 14px; font-weight: 500; padding: 9px 16px; border-radius: 16px; }
-  :focus-visible { outline: 2px solid var(--deep); outline-offset: 2px; }
+  /* 같이 듣기 패널 */
+  .listen { position: absolute; left: 0; right: 0; bottom: 0; background: var(--ink); color: #fff; z-index: 5; animation: up .25s ease; }
+  .listen .hd { display: flex; gap: 12px; padding: 14px 16px; align-items: center; }
+  .cover { width: 56px; height: 56px; flex: none; }
+  .listen .info { flex: 1; min-width: 0; }
+  .listen .info b { display: block; font-size: 15px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .listen .info span { font-size: 12px; color: #ffffffaa; }
+  .listen .x { width: 32px; height: 32px; color: #ffffffaa; font-size: 18px; align-self: flex-start; }
+  .bar { height: 2px; background: #ffffff33; margin: 0 16px; }
+  .bar i { display: block; height: 100%; background: var(--teal); }
+  .times { display: flex; justify-content: space-between; font-size: 11px; color: #ffffff88; padding: 6px 16px 0; font-variant-numeric: tabular-nums; }
+  .listen .ft { display: flex; align-items: center; gap: 8px; padding: 12px 16px 16px; font-size: 12px; color: #ffffffcc; }
+  .listen .join { margin-left: auto; height: 38px; padding: 0 18px; background: var(--mint); color: var(--ink); font-weight: 700; font-size: 13px; }
+  .listen .join.on { background: transparent; color: #fff; border: 1px solid #ffffff55; }
+  .listen .src { font-size: 10px; color: #ffffff66; padding: 0 16px 10px; }
+
+  /* 스레드: 사진이 화면 전체 */
+  .thread { color: #fff; background-color: var(--slate); background-size: cover; background-position: center; }
+  .bars { display: flex; gap: 2px; padding: 8px 8px 0; }
+  .bars i { flex: 1; height: 2px; background: #fff6; }
+  .bars i.on { background: #fff; }
+  .thread .top { border-bottom: 0; }
+  .thread .top button { width: 52px; height: 52px; font-size: 20px; }
+  .t-head { padding: 0 16px 14px; }
+  .who-row { display: flex; align-items: center; gap: 8px; font-size: 13px; }
+  .who-row .sub { font-size: 12px; opacity: .8; }
+  .t-head h1 { font-size: 24px; font-weight: 700; margin-top: 10px; line-height: 1.3; text-shadow: 0 1px 8px #0005; }
+  .t-meta { display: flex; flex-wrap: wrap; gap: 2px; margin-top: 12px; }
+  .t-meta > * { font-size: 12px; padding: 6px 10px; background: #0000004d; backdrop-filter: blur(8px); }
+  .t-meta button.on { background: #fff; color: var(--ink); }
+  .ref { display: flex; align-items: center; gap: 8px; }
+  .ref .thumb { width: 24px; height: 24px; }
+  .replies { display: flex; flex-direction: column; gap: 2px; margin-top: auto; }
+  .reply { display: grid; grid-template-columns: 52px 1fr; background: #ffffffe6; color: var(--ink); backdrop-filter: blur(12px); animation: rise .3s ease both; }
+  .reply.me { background: #bfefe0eb; }
+  .reply .tm { font-size: 11px; color: var(--slate); padding: 12px 0 0 12px; font-variant-numeric: tabular-nums; }
+  .reply .body { padding: 10px 14px 10px 0; min-width: 0; }
+  .reply .who { font-size: 12px; color: var(--slate); display: flex; align-items: center; gap: 6px; }
+  .reply p { font-size: 15px; line-height: 1.5; margin-top: 2px; white-space: pre-wrap; word-break: break-word; }
+  .reacts { display: flex; gap: 2px; margin-top: 6px; flex-wrap: wrap; }
+  .react { font-size: 12px; padding: 2px 8px; background: #6b72801a; color: var(--slate); }
+  .react.on { background: var(--deep); color: #fff; }
+  .thread footer { display: flex; background: #ffffffeb; backdrop-filter: blur(12px); min-height: 52px; border-top: 1px solid #ffffff55; }
+  .thread footer textarea { flex: 1; padding: 14px 16px; max-height: 120px; }
+
   @keyframes rise { from { opacity: 0; transform: translateY(6px); } }
+  @keyframes up { from { transform: translateY(100%); } }
+  @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
 </style>
 </head>
 <body>
 <div class="app" id="app">
   <section class="view home">
     <div class="top">
-      <span class="av" style="width:40px;height:40px;font-size:15px;background:var(--teal)">나</span>
+      <span class="logo">PatPat</span>
       <div class="seg" id="seg"><button class="on" data-v="feed">피드</button><button data-v="map">지도</button></div>
-      <button class="icon-btn" aria-label="검색">⌕</button>
+    </div>
+    <div class="tabs">
+      <button class="new" id="upload" aria-label="새 스레드 시작" aria-expanded="false">＋</button>
+      <div class="rooms" id="rooms"></div>
+      <input type="file" id="file" accept="image/*" hidden>
     </div>
     <div class="scroll">
-      <div class="hello hello-row">
-        <button class="new" id="upload" aria-label="새 스레드 시작" aria-expanded="false">＋</button>
-        <div class="rooms" id="rooms"></div>
-        <input type="file" id="file" accept="image/*" hidden>
-      </div>
       <div class="sheet" id="sheet" hidden>
         <textarea id="draft" rows="2" placeholder="사진 없이 글만 올려도 돼요"></textarea>
         <div class="sheet-row">
           <button class="ghost" id="pick">사진 추가</button>
           <span class="picked" id="picked" hidden></span>
-          <label class="toggle"><input type="checkbox" id="allowKeep" checked> 보관 허용</label>
-          <select id="place" aria-label="위치"><option value="">📍 위치 없음</option></select>
+          <select id="place" aria-label="위치"><option value="">위치 없음</option></select>
+          <label><input type="checkbox" id="allowKeep" checked> 보관 허용</label>
           <button class="send" id="post">올리기</button>
         </div>
       </div>
+
       <div id="feedView">
-        <div class="rail" id="hot"></div>
-        <div class="sec" id="pastSec"><h2>History</h2><span class="count" id="allCount"></span></div>
-        <div class="list" id="all"></div>
+        <div class="grid" id="hot"></div>
+        <div class="sec" id="pastSec"><h2>History</h2><span id="allCount"></span></div>
+        <div id="all"></div>
       </div>
+
       <div id="mapView" hidden>
         <div class="map-wrap" id="map">
           <svg viewBox="0 0 100 125" preserveAspectRatio="none" aria-hidden="true">
             <path d="M0 84 C 20 78, 35 94, 55 90 S 85 74, 100 78 L 100 90 C 85 86, 62 104, 45 103 S 15 94, 0 97 Z" fill="#BFEFE0"/>
-            <path d="M10 0 L 30 125 M 0 40 L 100 30 M 55 0 L 62 80 M 0 64 L 100 58 M 75 0 L 92 125" stroke="#D6C7B0" stroke-width=".7" fill="none" opacity=".7"/>
-            <ellipse cx="70" cy="18" rx="9" ry="6" fill="#87CBB9" opacity=".35"/>
-            <ellipse cx="16" cy="76" rx="7" ry="3" fill="#87CBB9" opacity=".35"/>
+            <path d="M10 0 L 30 125 M 0 40 L 100 30 M 55 0 L 62 80 M 0 64 L 100 58 M 75 0 L 92 125" stroke="#D6C7B0" stroke-width=".6" fill="none"/>
+            <rect x="62" y="12" width="16" height="10" fill="#87CBB9" opacity=".3"/>
+            <rect x="10" y="74" width="12" height="4" fill="#87CBB9" opacity=".3"/>
           </svg>
         </div>
         <div class="now">
@@ -241,26 +220,40 @@
           <select id="nowPlace" aria-label="동네"></select>
           <button class="send" id="nowBtn">남기기</button>
         </div>
-        <p class="map-note">위치는 올리는 순간에만, 동네 단위로만 보여요. 상태는 24시간 뒤 사라져요.</p>
+        <div class="music-row">
+          <span>🎵 듣는 노래 공유</span><b id="myTrack"></b>
+          <button class="switch" id="musicSwitch" aria-pressed="false" aria-label="듣는 노래 공유"></button>
+        </div>
+        <p class="map-note">위치는 올리는 순간에만, 동네 단위로만 보여요. 상태는 24시간 뒤 사라져요. 친구 노래를 누르면 같이 들을 수 있어요.</p>
       </div>
+    </div>
+
+    <div class="listen" id="listen" hidden>
+      <div class="hd">
+        <span class="cover" id="lCover"></span>
+        <div class="info"><b id="lTitle"></b><span id="lArtist"></span></div>
+        <button class="x" id="lClose" aria-label="닫기">×</button>
+      </div>
+      <div class="bar"><i id="lBar"></i></div>
+      <div class="times"><span id="lPos"></span><span id="lDur"></span></div>
+      <div class="ft"><span class="stack" id="lWho"></span><span id="lWhoText"></span>
+        <button class="join" id="lJoin">같이 듣기</button></div>
+      <p class="src">Spotify 연결 전 예시 화면이에요</p>
     </div>
   </section>
 
   <section class="view thread" id="thread">
     <div class="bars" id="bars"></div>
     <div class="top">
-      <button class="icon-btn" id="back" aria-label="뒤로">←</button>
-      <button class="icon-btn" aria-label="더보기">⋯</button>
+      <button id="back" aria-label="뒤로">←</button>
     </div>
     <div class="scroll" id="tScroll" style="display:flex;flex-direction:column">
       <div class="t-head" id="tHead"></div>
-      <div class="replies" id="replies" style="margin-top:auto"></div>
+      <div class="replies" id="replies"></div>
     </div>
     <footer>
-      <div class="input">
-        <textarea id="msg" rows="1" placeholder="스레드에 답장"></textarea>
-        <button class="send" id="send">보내기</button>
-      </div>
+      <textarea id="msg" rows="1" placeholder="스레드에 답장"></textarea>
+      <button class="send" id="send">보내기</button>
     </footer>
   </section>
 </div>
@@ -276,56 +269,69 @@
   const H = 3600e3, T0 = Date.now();
   const rooms = [
     { name: "우리 넷", members: ["jiwoo", "hana", "seo"], threads: [
-      { by: "jiwoo", at: T0 - 0.4 * H, time: "12:40", title: "퇴근길 하늘 미쳤다", place: "합정", unread: 2, archivable: true, tags: ["하늘", "합정"],
+      { by: "jiwoo", at: T0 - 0.4 * H, time: "12:40", title: "퇴근길 하늘 미쳤다", place: "합정", unread: 2, archivable: true,
         photo: "linear-gradient(160deg,#f6c9a8,#e9a3a0 50%,#6B7280)",
         replies: [
           { by: "hana", time: "12:42", text: "어디야 이거?? 색감 뭐임", reacts: { "😮": 2 } },
           { by: "jiwoo", time: "12:43", text: "합정역 앞 육교", reacts: {} },
         ] },
-      { by: "hana", at: T0 - 2 * H, time: "11:05", title: "토요일에 여기 갈 사람", place: "성수", unread: 1, archivable: true, tags: ["약속"],
+      { by: "hana", at: T0 - 2 * H, time: "11:05", title: "토요일에 여기 갈 사람", place: "성수", unread: 1, archivable: true,
         photo: "linear-gradient(170deg,#BFEFE0,#87CBB9 55%,#4d8d7d)",
         replies: [{ by: "jiwoo", time: "11:20", text: "나 토요일 가능", reacts: { "👍": 2 } }] },
-      { by: "seo", at: T0 - 5 * H, time: "09:30", title: "오늘의 점심 평가 부탁", place: "여의도", unread: 0, archivable: true, tags: ["점심"],
+      { by: "seo", at: T0 - 5 * H, time: "09:30", title: "오늘의 점심 평가 부탁", place: "여의도", unread: 0, archivable: true,
         photo: "linear-gradient(200deg,#F3EDE2,#D6C7B0 50%,#a88f6a)",
         replies: [
           { by: "me", time: "09:41", text: "7점. 김치가 부족해 보임", reacts: { "😂": 3 } },
           { by: "seo", time: "09:58", text: "김치 리필 무한이었음 다들 오해", reacts: { "😂": 1 } },
         ] },
-      { by: "me", at: T0 - 30 * H, time: "어제", title: "고양이 근황", unread: 0, archivable: true, keptBy: "hana", tags: ["고양이"],
+      { by: "me", at: T0 - 30 * H, time: "어제", title: "고양이 근황", unread: 0, archivable: true, keptBy: "hana",
         photo: "linear-gradient(140deg,#e8e0d2,#b9ab95)",
         replies: [{ by: "hana", time: "어제", text: "볼살 실화냐", reacts: { "❤️": 3 } }] },
-      { by: "jiwoo", at: T0 - 75 * H, time: "3일 전", title: "새로 산 키링", unread: 0, archivable: false, tags: ["득템"],
+      { by: "jiwoo", at: T0 - 75 * H, time: "3일 전", title: "새로 산 키링", unread: 0, archivable: false,
         photo: "linear-gradient(120deg,#BFEFE0,#F3EDE2)",
         replies: [{ by: "seo", time: "3일 전", text: "어디서 샀어 나도", reacts: {} }] },
     ] },
     { name: "가족", members: ["hana"], threads: [
-      { by: "hana", at: T0 - 50 * H, time: "2일 전", title: "엄마가 보낸 김장 사진", unread: 0, archivable: true, keptBy: "me", tags: ["김장"],
+      { by: "hana", at: T0 - 50 * H, time: "2일 전", title: "엄마가 보낸 김장 사진", unread: 0, archivable: true, keptBy: "me",
         photo: "linear-gradient(150deg,#e9b7a2,#c98b72)",
         replies: [{ by: "me", time: "2일 전", text: "주말에 가지러 갈게", reacts: { "👍": 1 } }] },
     ] },
     { name: "회사 동기", threads: [] },
     { name: "지우", dm: "jiwoo", threads: [
-      { by: "jiwoo", at: T0 - 1 * H, time: "12:10", title: "오늘 저녁 뭐 먹지?", color: "#D6C7B0", unread: 1, tags: ["저녁"],
+      { by: "jiwoo", at: T0 - 1 * H, time: "12:10", title: "오늘 저녁 뭐 먹지?", color: "#D6C7B0", unread: 1,
         replies: [
           { by: "me", time: "12:15", text: "떡볶이 어때", reacts: {} },
           { by: "jiwoo", time: "12:16", text: "콜. 7시 역 앞", reacts: { "👍": 1 } },
         ] },
-      { by: "me", at: T0 - 60 * H, time: "2일 전", title: "빌린 책 언제 줄까", color: "#87CBB9", unread: 0, tags: ["책"],
+      { by: "me", at: T0 - 60 * H, time: "2일 전", title: "빌린 책 언제 줄까", color: "#87CBB9", unread: 0,
         replies: [{ by: "jiwoo", time: "2일 전", text: "다음 주에 만날 때!", reacts: {} }] },
     ] },
   ];
   let room = 0, threads = rooms[0].threads;
+
   // 동네 단위 위치 (지도 좌표: 100 x 125)
   const places = {
     "망원": { x: 24, y: 44 }, "합정": { x: 28, y: 68 }, "홍대": { x: 52, y: 56 }, "연남": { x: 40, y: 24 },
     "신촌": { x: 72, y: 38 }, "여의도": { x: 48, y: 112 }, "성수": { x: 78, y: 70 },
   };
-  // 지금 뭐 해: 사람별 최신 상태 하나
+  // 예시 곡 (Spotify 연결 전)
+  const tracks = {
+    nanchun:  { title: "난춘", artist: "새소년", dur: 263, cover: "linear-gradient(135deg,#e9a3a0,#6B7280)" },
+    everything: { title: "Everything", artist: "검정치마", dur: 254, cover: "linear-gradient(135deg,#2f3440,#87CBB9)" },
+    hype:     { title: "Hype Boy", artist: "NewJeans", dur: 179, cover: "linear-gradient(135deg,#BFEFE0,#9fc5e8)" },
+  };
+  // 지금 뭐 해: 사람별 최신 상태 하나. song = 곡과 재생 시작 시각
   const statuses = {
-    jiwoo: { text: "☕ 카공 중", place: "연남", at: T0 - 0.5 * H },
-    hana:  { text: "🏃 한강 러닝", place: "망원", at: T0 - 1 * H },
+    jiwoo: { text: "☕ 카공 중", place: "연남", at: T0 - 0.5 * H, song: { id: "everything", from: T0 - 80e3 } },
+    hana:  { text: "🏃 한강 러닝", place: "망원", at: T0 - 1 * H, song: { id: "hype", from: T0 - 30e3 } },
     seo:   { text: "📚 도서관", place: "신촌", at: T0 - 3 * H },
   };
+  let listeningTo = null; // 같이 듣는 친구
+  let sharing = false;    // 내 노래 공유
+
+  const app = document.getElementById("app");
+  const msg = document.getElementById("msg");
+  let current = null;
   const colors = ["#87CBB9", "#D6C7B0", "#6B7280", "#4f9a87"];
   // 사진이 없으면 단색 배경
   const bg = t => t.photo || `linear-gradient(${t.color}, ${t.color})`;
@@ -334,27 +340,25 @@
   const subj = id => id === "me" ? "내가" : people[id].name + ((people[id].name.at(-1).charCodeAt(0) - 0xAC00) % 28 ? "이가" : "가");
   const fresh = t => Date.now() - t.at < 24 * H;
   const hoursLeft = t => Math.max(1, Math.ceil(24 - (Date.now() - t.at) / H));
-
-  const app = document.getElementById("app");
-  const msg = document.getElementById("msg");
-  let current = null;
   const esc = s => s.replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
-  const av = id => `<span class="av" style="background:${people[id].color}">${people[id].name[0]}</span>`;
+  const av = (id, cls = "") => `<span class="av ${cls}" style="background:${people[id].color}">${people[id].name[0]}</span>`;
   const stack = t => {
     const ids = [...new Set([t.by, ...t.replies.map(r => r.by)])];
-    return `<span class="stack">${ids.slice(0, 3).map(av).join("")}${ids.length > 3 ? `<small>+${ids.length - 3}</small>` : ""}</span>`;
+    return `<span class="stack">${ids.slice(0, 3).map(id => av(id, "s")).join("")}</span>`;
   };
   const lastLine = t => {
     const r = t.replies[t.replies.length - 1];
     return r ? `${people[r.by].name}: ${esc(r.text)}` : "아직 답장이 없어요";
   };
+  const mmss = s => `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, "0")}`;
+  const now = () => new Date().toTimeString().slice(0, 5);
 
   function renderHome() {
     const menu = document.getElementById("rooms");
     menu.innerHTML = "";
     rooms.forEach((r, k) => {
       const b = document.createElement("button");
-      b.innerHTML = (r.dm ? av(r.dm) : "") + esc(r.name);
+      b.innerHTML = (r.dm ? av(r.dm, "s") : "") + esc(r.name);
       if (k === room) b.className = "on";
       b.onclick = () => { room = k; threads = r.threads; renderHome(); };
       menu.appendChild(b);
@@ -368,23 +372,19 @@
     document.getElementById("pastSec").hidden = keep;
     document.getElementById("all").hidden = keep;
 
-    const rail = document.getElementById("hot");
-    rail.innerHTML = today.length ? "" : `<div class="empty">오늘 올라온 이야기가 없어요. ＋로 첫 사진을 올려 보세요</div>`;
+    const grid = document.getElementById("hot");
+    grid.innerHTML = today.length ? "" : `<div class="empty">오늘 올라온 이야기가 없어요. ＋로 첫 이야기를 올려 보세요</div>`;
     today.forEach(t => {
       const b = document.createElement("button");
-      b.className = "tcard photo" + (t.photo ? "" : " text");
-      b.style.backgroundImage = `linear-gradient(#0000 35%, #0007), ${bg(t)}`;
+      b.className = "tile" + (t.photo ? "" : " text");
+      b.style.backgroundImage = `linear-gradient(#0000 40%, #0008), ${bg(t)}`;
       b.innerHTML = `
-        <div class="who-row">${av(t.by)}
-          <div><b>${people[t.by].name}</b><span class="sub">${t.time}</span></div>
-          ${keep ? "" : `<span class="left">${hoursLeft(t)}시간 남음</span>`}</div>
+        <div class="badges">${t.unread ? `<span class="n">${t.unread}</span>` : ""}${t.keptBy && !keep ? "<span>📌</span>" : ""}${keep ? "" : `<span>${hoursLeft(t)}h</span>`}</div>
+        <div class="meta">${av(t.by, "s")}${people[t.by].name} · ${t.time}${t.place ? ` · ${esc(t.place)}` : ""}</div>
         <h3>${esc(t.title)}</h3>
-        <div class="last">${lastLine(t)}</div>
-        <div class="foot">${keep ? "<span></span>" : stack(t)}
-          ${t.keptBy && !keep ? `<span class="unread">📌</span>` : ""}
-          ${t.unread ? `<span class="unread"><i></i>새 답장 ${t.unread}</span>` : ""}<span class="plus">＋</span></div>`;
+        <div class="last">${lastLine(t)}</div>`;
       b.onclick = () => openThread(threads.indexOf(t));
-      rail.appendChild(b);
+      grid.appendChild(b);
     });
 
     const list = document.getElementById("all");
@@ -394,17 +394,17 @@
       b.className = "row";
       b.innerHTML = `<span class="thumb" style="background-image:${bg(t)}"></span>
         <div class="mid"><h4>${esc(t.title)}</h4><div class="last">${lastLine(t)}</div>
-          <span class="pin">📌 ${subj(t.keptBy)} 보관함</span></div>
+          <div class="pin">📌 ${subj(t.keptBy)} 보관함</div></div>
         <span class="time">${t.time}</span>`;
       b.onclick = () => openThread(threads.indexOf(t));
       list.appendChild(b);
     });
-
-    renderMap();  }
+    renderMap();
+  }
 
   function renderMap() {
     const map = document.getElementById("map");
-    map.querySelectorAll(".mk, .lbl").forEach(e => e.remove());
+    map.querySelectorAll(".mk").forEach(e => e.remove());
     const svg = map.querySelector("svg");
     svg.querySelectorAll("text").forEach(e => e.remove());
     Object.entries(places).forEach(([n, p]) => {
@@ -413,9 +413,9 @@
       t.textContent = n;
       svg.appendChild(t);
     });
-    const put = (el, place, dx = 0, dy = 0) => {
+    const put = (el, place, dy = 0) => {
       const p = places[place];
-      el.style.left = `calc(${p.x}% + ${dx}px)`;
+      el.style.left = `${p.x}%`;
       el.style.top = `calc(${p.y / 1.25}% + ${dy}px)`;
       map.appendChild(el);
     };
@@ -423,7 +423,7 @@
     threads.filter(t => t.place && fresh(t)).forEach(t => {
       const b = document.createElement("button");
       b.className = "mk";
-      b.innerHTML = `<span class="ph" style="background-image:${bg(t)}"></span><span class="tag">${esc(t.title)}</span>`;
+      b.innerHTML = `<span class="ph" style="background-image:${bg(t)}"></span><span class="tag"><span>${esc(t.title)}</span></span>`;
       b.onclick = () => openThread(threads.indexOf(t));
       put(b, t.place);
     });
@@ -432,25 +432,88 @@
     const who = [...(r.members || (r.dm ? [r.dm] : [])), "me"];
     who.filter(id => statuses[id] && fresh(statuses[id])).forEach(id => {
       const st = statuses[id];
-      const d = document.createElement("div");
-      d.className = "mk st" + (id === "me" ? " me" : "");
-      d.innerHTML = `${av(id)}<span class="tag">${esc(st.text)}</span>`;
+      const song = songOf(id);
+      const el = document.createElement(song && id !== "me" ? "button" : "div");
+      el.className = "mk" + (id === "me" ? " me" : "") + (listeningTo === id ? " with" : "");
+      el.innerHTML = `${av(id)}<span class="tag"><span>${esc(st.text)}</span>${song ? `<span class="song">🎵 ${esc(song.title)} · ${esc(song.artist)}</span>` : ""}</span>`;
+      if (song && id !== "me") el.onclick = () => openListen(id);
       const busy = threads.some(t => t.place === st.place && fresh(t));
-      put(d, st.place, 0, busy ? -48 : 0);
+      put(el, st.place, busy ? -48 : 0);
     });
   }
+
+  // 같이 듣는 중이면 친구 곡을 그대로 따라감
+  function songOf(id) {
+    if (id === "me") {
+      if (listeningTo) return songOf(listeningTo);
+      return sharing ? tracks.nanchun : null;
+    }
+    const s = statuses[id] && statuses[id].song;
+    return s ? tracks[s.id] : null;
+  }
+  function songPos(id) {
+    const s = statuses[id].song;
+    return ((Date.now() - s.from) / 1000) % tracks[s.id].dur;
+  }
+
+  let openId = null, ticker = null;
+  function openListen(id) {
+    openId = id;
+    const t = songOf(id);
+    document.getElementById("lCover").style.background = t.cover;
+    document.getElementById("lTitle").textContent = t.title;
+    document.getElementById("lArtist").textContent = t.artist;
+    document.getElementById("lDur").textContent = mmss(t.dur);
+    document.getElementById("listen").hidden = false;
+    renderListen();
+    clearInterval(ticker);
+    ticker = setInterval(tick, 500);
+    tick();
+  }
+  function renderListen() {
+    const together = listeningTo === openId;
+    const ids = together ? [openId, "me"] : [openId];
+    document.getElementById("lWho").innerHTML = ids.map(i => av(i, "s")).join("");
+    document.getElementById("lWhoText").textContent = together ? `${people[openId].name}랑 같이 듣는 중` : `${subj(openId)} 듣는 중`;
+    const j = document.getElementById("lJoin");
+    j.textContent = together ? "그만 듣기" : "같이 듣기";
+    j.classList.toggle("on", together);
+  }
+  function tick() {
+    const t = songOf(openId), pos = songPos(openId);
+    document.getElementById("lBar").style.width = (pos / t.dur * 100) + "%";
+    document.getElementById("lPos").textContent = mmss(pos);
+  }
+  document.getElementById("lJoin").onclick = () => {
+    listeningTo = listeningTo === openId ? null : openId;
+    renderListen();
+    renderMap();
+  };
+  document.getElementById("lClose").onclick = () => {
+    document.getElementById("listen").hidden = true;
+    clearInterval(ticker);
+  };
+
+  const sw = document.getElementById("musicSwitch");
+  sw.onclick = () => {
+    sharing = !sharing;
+    sw.setAttribute("aria-pressed", sharing);
+    document.getElementById("myTrack").textContent = sharing ? `${tracks.nanchun.title} · ${tracks.nanchun.artist}` : "";
+    renderMap();
+  };
 
   document.querySelectorAll("#seg button").forEach(b => b.onclick = () => {
     document.querySelectorAll("#seg button").forEach(x => x.classList.toggle("on", x === b));
     const map = b.dataset.v === "map";
     document.getElementById("feedView").hidden = map;
     document.getElementById("mapView").hidden = !map;
+    if (!map) document.getElementById("lClose").click();
     renderHome();
   });
 
   // 위치 선택지 채우기
   Object.keys(places).forEach(n => {
-    document.getElementById("place").add(new Option("📍 " + n, n));
+    document.getElementById("place").add(new Option(n, n));
     document.getElementById("nowPlace").add(new Option(n, n));
   });
   document.getElementById("nowBtn").onclick = () => {
@@ -463,21 +526,20 @@
 
   function renderThread() {
     const t = threads[current];
-    document.getElementById("thread").style.backgroundImage = `linear-gradient(#0005, #0000 30%, #0000 55%, #0006), ${bg(t)}`;
+    document.getElementById("thread").style.backgroundImage = `linear-gradient(#0005, #0000 30%, #0000 50%, #0006), ${bg(t)}`;
     document.getElementById("bars").innerHTML = threads.map((_, k) => `<i class="${k <= current ? "on" : ""}"></i>`).join("");
+    const meta = [];
+    if (t.place) meta.push(`<span>📍 ${esc(t.place)}</span>`);
+    if (t.ref) meta.push(`<span class="ref"><span class="thumb" style="background-image:${t.ref.bg}"></span>${esc(t.ref.room)} · ${esc(t.ref.title)}</span>`);
+    if (!isDm()) meta.push(t.archivable
+      ? `<button class="${t.keptBy ? "on" : ""}" id="keepBtn">📌 ${t.keptBy ? `${subj(t.keptBy)} 보관함` : "보관하기"}</button>`
+      : `<span>보관 꺼짐 · 24시간 뒤 사라져요</span>`);
+    if (!isDm() && t.by !== "me") meta.push(`<button id="dmBtn">🔒 ${people[t.by].name}에게 따로 답장</button>`);
     document.getElementById("tHead").innerHTML = `
-      <div class="who-row">${av(t.by)}
-        <div><b>${people[t.by].name}</b><span class="sub">${t.time} · 답장 ${t.replies.length}</span></div>
+      <div class="who-row">${av(t.by)}<b>${people[t.by].name}</b><span class="sub">${t.time} · 답장 ${t.replies.length}</span>
         <span style="margin-left:auto">${isDm() ? "" : stack(t)}</span></div>
       <h1>${esc(t.title)}</h1>
-      ${t.place ? `<span class="place-chip">📍 ${esc(t.place)}</span>` : ""}
-      ${t.ref ? `<div class="ref"><span class="thumb" style="background-image:${t.ref.bg}"></span>
-        <div><span class="sub">${esc(t.ref.room)}에서</span><b>${esc(t.ref.title)}</b></div></div>` : ""}
-      ${isDm() ? "" : t.archivable
-        ? `<button class="keep-btn${t.keptBy ? " on" : ""}" id="keepBtn">📌 ${t.keptBy ? `${subj(t.keptBy)} 보관함` : "보관하기"}</button>`
-        : `<span class="keep-note">올린 사람이 보관을 꺼 뒀어요 · 24시간 뒤 사라져요</span>`}
-      ${!isDm() && t.by !== "me" ? `<button class="dm-btn" id="dmBtn">🔒 ${people[t.by].name}에게 따로 답장</button>` : ""}
-      <div class="chips">${t.tags.map((g, k) => `<span class="chip${k ? "" : " on"}">#${esc(g)}</span>`).join("")}</div>`;
+      <div class="t-meta">${meta.join("")}</div>`;
     const dmBtn = document.getElementById("dmBtn");
     if (dmBtn) dmBtn.onclick = () => replyPrivately(t);
     const keepBtn = document.getElementById("keepBtn");
@@ -494,8 +556,8 @@
       d.className = "reply" + (r.by === "me" ? " me" : "");
       const reacts = Object.entries(r.reacts).map(([e, n]) =>
         `<button class="react${r.mine === e ? " on" : ""}" data-e="${e}">${e} ${n}</button>`).join("");
-      d.innerHTML = `<span class="pill">${r.time}</span>
-        <div class="bubble"><div class="who-row">${av(r.by)}<b>${people[r.by].name}</b></div>
+      d.innerHTML = `<span class="tm">${r.time}</span>
+        <div class="body"><div class="who">${av(r.by, "s")}${people[r.by].name}</div>
           <p>${esc(r.text)}</p>
           <div class="reacts">${reacts}<button class="react" data-e="❤️">＋</button></div></div>`;
       d.querySelectorAll(".react").forEach(btn => btn.onclick = () => toggleReact(r, btn.dataset.e));
@@ -515,7 +577,6 @@
   function openThread(i) { current = i; threads[i].unread = 0; renderThread(); app.classList.add("open"); }
   document.getElementById("back").onclick = () => { app.classList.remove("open"); renderHome(); };
 
-  const now = () => new Date().toTimeString().slice(0, 5);
   function send() {
     const text = msg.value.trim();
     if (!text || current === null) return;
@@ -538,7 +599,7 @@
     const ref = { bg: bg(t), title: t.title, room: rooms[room].name };
     room = k; threads = rooms[k].threads;
     threads.unshift({ by: "me", at: Date.now(), time: now(), title: `"${t.title}"에 답장`, color: pickColor(),
-      unread: 0, tags: ["따로 답장"], ref, replies: [] });
+      unread: 0, ref, replies: [] });
     renderHome();
     openThread(0);
     msg.focus();
@@ -568,12 +629,12 @@
   document.getElementById("post").onclick = () => {
     const title = draft.value.trim();
     if (!title && !pickedUrl) { draft.focus(); return; }
-    threads.unshift({ by: "me", at: Date.now(), time: now(), title: title || "새 사진", unread: 0, tags: ["새 스레드"],
+    threads.unshift({ by: "me", at: Date.now(), time: now(), title: title || "새 사진", unread: 0,
       photo: pickedUrl ? `url(${pickedUrl})` : null, color: pickColor(), replies: [],
       archivable: document.getElementById("allowKeep").checked,
       place: document.getElementById("place").value || null });
-    document.getElementById("place").value = "";
     draft.value = ""; pickedUrl = null; picked.hidden = true;
+    document.getElementById("place").value = "";
     toggleSheet(false);
     renderHome();
     openThread(0);
