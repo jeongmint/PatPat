@@ -109,6 +109,13 @@
 
   .sec { display: flex; align-items: center; justify-content: space-between; padding: 8px 20px 10px; }
   .sec h2 { font-size: 18px; font-weight: 700; }
+  .room-btn { font-size: 15px; color: var(--slate); display: inline-flex; align-items: center; gap: 4px; }
+  .room-btn b { color: var(--ink); font-weight: 700; }
+  .rooms { display: flex; gap: 8px; flex-wrap: wrap; padding: 0 20px 14px; }
+  .rooms button { font-size: 13px; padding: 6px 14px; border-radius: 999px; background: var(--card); box-shadow: var(--shadow); color: var(--slate); }
+  .rooms button.on { background: var(--deep); color: #fff; }
+  .empty { font-size: 13px; color: var(--slate); padding: 18px; border-radius: 18px; border: 1.5px dashed var(--sand); text-align: center; flex: 1; }
+  .left { font-size: 11px; padding: 2px 8px; border-radius: 999px; background: #0003; backdrop-filter: blur(6px); margin-left: auto; align-self: flex-start; }
   .list { display: flex; flex-direction: column; gap: 10px; padding: 0 20px; }
   .row {
     display: flex; align-items: center; gap: 12px; padding: 12px; border-radius: 18px;
@@ -163,12 +170,14 @@
     </div>
     <div class="scroll">
       <div class="hello hello-row">
-        <div><p>안녕, 민트</p><h1>새 이야기가 <span id="newCount"></span>개 있어요</h1></div>
+        <div><button class="room-btn" id="roomBtn" aria-expanded="false"><b id="roomName"></b> ▾</button>
+          <h1>오늘의 이야기 <span id="newCount"></span>개</h1></div>
         <button class="new" id="upload" aria-label="사진으로 스레드 시작">＋</button>
         <input type="file" id="file" accept="image/*" hidden>
       </div>
+      <div class="rooms" id="rooms" hidden></div>
       <div class="rail" id="hot"></div>
-      <div class="sec"><h2>우리 넷</h2><span class="count" id="allCount"></span></div>
+      <div class="sec"><h2>지난 이야기</h2><span class="count" id="allCount"></span></div>
       <div class="list" id="all"></div>
     </div>
   </section>
@@ -199,27 +208,42 @@
     hana:  { name: "하나", color: "#6B7280" },
     seo:   { name: "서진", color: "#7fb8a8" },
   };
-  // 샘플 사진 자리는 그라데이션
-  const threads = [
-    { by: "jiwoo", time: "12:40", title: "퇴근길 하늘 미쳤다", unread: 2, tags: ["하늘", "합정"],
-      photo: "linear-gradient(160deg,#f6c9a8,#e9a3a0 50%,#6B7280)",
-      replies: [
-        { by: "hana", time: "12:42", text: "어디야 이거?? 색감 뭐임", reacts: { "😮": 2 } },
-        { by: "jiwoo", time: "12:43", text: "합정역 앞 육교", reacts: {} },
-      ] },
-    { by: "hana", time: "11:05", title: "토요일에 여기 갈 사람", unread: 1, tags: ["약속"],
-      photo: "linear-gradient(170deg,#BFEFE0,#87CBB9 55%,#4d8d7d)",
-      replies: [{ by: "jiwoo", time: "11:20", text: "나 토요일 가능", reacts: { "👍": 2 } }] },
-    { by: "seo", time: "09:30", title: "오늘의 점심 평가 부탁", unread: 0, tags: ["점심"],
-      photo: "linear-gradient(200deg,#F3EDE2,#D6C7B0 50%,#a88f6a)",
-      replies: [
-        { by: "me", time: "09:41", text: "7점. 김치가 부족해 보임", reacts: { "😂": 3 } },
-        { by: "seo", time: "09:58", text: "김치 리필 무한이었음 다들 오해", reacts: { "😂": 1 } },
-      ] },
-    { by: "me", time: "어제", title: "고양이 근황", unread: 0, tags: ["고양이"],
-      photo: "linear-gradient(140deg,#e8e0d2,#b9ab95)",
-      replies: [{ by: "hana", time: "어제", text: "볼살 실화냐", reacts: { "❤️": 3 } }] },
+  // 샘플 사진 자리는 그라데이션. at = 올린 시각
+  const H = 3600e3, T0 = Date.now();
+  const rooms = [
+    { name: "우리 넷", threads: [
+      { by: "jiwoo", at: T0 - 0.4 * H, time: "12:40", title: "퇴근길 하늘 미쳤다", unread: 2, tags: ["하늘", "합정"],
+        photo: "linear-gradient(160deg,#f6c9a8,#e9a3a0 50%,#6B7280)",
+        replies: [
+          { by: "hana", time: "12:42", text: "어디야 이거?? 색감 뭐임", reacts: { "😮": 2 } },
+          { by: "jiwoo", time: "12:43", text: "합정역 앞 육교", reacts: {} },
+        ] },
+      { by: "hana", at: T0 - 2 * H, time: "11:05", title: "토요일에 여기 갈 사람", unread: 1, tags: ["약속"],
+        photo: "linear-gradient(170deg,#BFEFE0,#87CBB9 55%,#4d8d7d)",
+        replies: [{ by: "jiwoo", time: "11:20", text: "나 토요일 가능", reacts: { "👍": 2 } }] },
+      { by: "seo", at: T0 - 5 * H, time: "09:30", title: "오늘의 점심 평가 부탁", unread: 0, tags: ["점심"],
+        photo: "linear-gradient(200deg,#F3EDE2,#D6C7B0 50%,#a88f6a)",
+        replies: [
+          { by: "me", time: "09:41", text: "7점. 김치가 부족해 보임", reacts: { "😂": 3 } },
+          { by: "seo", time: "09:58", text: "김치 리필 무한이었음 다들 오해", reacts: { "😂": 1 } },
+        ] },
+      { by: "me", at: T0 - 30 * H, time: "어제", title: "고양이 근황", unread: 0, tags: ["고양이"],
+        photo: "linear-gradient(140deg,#e8e0d2,#b9ab95)",
+        replies: [{ by: "hana", time: "어제", text: "볼살 실화냐", reacts: { "❤️": 3 } }] },
+      { by: "jiwoo", at: T0 - 75 * H, time: "3일 전", title: "새로 산 키링", unread: 0, tags: ["득템"],
+        photo: "linear-gradient(120deg,#BFEFE0,#F3EDE2)",
+        replies: [{ by: "seo", time: "3일 전", text: "어디서 샀어 나도", reacts: {} }] },
+    ] },
+    { name: "가족", threads: [
+      { by: "hana", at: T0 - 50 * H, time: "2일 전", title: "엄마가 보낸 김장 사진", unread: 0, tags: ["김장"],
+        photo: "linear-gradient(150deg,#e9b7a2,#c98b72)",
+        replies: [{ by: "me", time: "2일 전", text: "주말에 가지러 갈게", reacts: { "👍": 1 } }] },
+    ] },
+    { name: "회사 동기", threads: [] },
   ];
+  let room = 0, threads = rooms[0].threads;
+  const fresh = t => Date.now() - t.at < 24 * H;
+  const hoursLeft = t => Math.max(1, Math.ceil(24 - (Date.now() - t.at) / H));
 
   const app = document.getElementById("app");
   const msg = document.getElementById("msg");
@@ -236,19 +260,32 @@
   };
 
   function renderHome() {
-    const hot = threads.filter(t => t.unread);
-    document.getElementById("newCount").textContent = hot.length;
-    document.getElementById("allCount").textContent = threads.length;
+    document.getElementById("roomName").textContent = rooms[room].name;
+    const menu = document.getElementById("rooms");
+    menu.innerHTML = "";
+    rooms.forEach((r, k) => {
+      const b = document.createElement("button");
+      b.textContent = r.name;
+      if (k === room) b.className = "on";
+      b.onclick = () => { room = k; threads = r.threads; toggleRooms(false); renderHome(); };
+      menu.appendChild(b);
+    });
+
+    const today = threads.filter(fresh);
+    const past = threads.filter(t => !fresh(t));
+    document.getElementById("newCount").textContent = today.length;
+    document.getElementById("allCount").textContent = past.length;
 
     const rail = document.getElementById("hot");
-    rail.innerHTML = "";
-    (hot.length ? hot : threads.slice(0, 2)).forEach((t, k) => {
+    rail.innerHTML = today.length ? "" : `<div class="empty">오늘 올라온 이야기가 없어요. ＋로 첫 사진을 올려 보세요</div>`;
+    today.forEach(t => {
       const b = document.createElement("button");
       b.className = "tcard photo";
       b.style.backgroundImage = `linear-gradient(#0000 35%, #0007), ${t.photo}`;
       b.innerHTML = `
         <div class="who-row">${av(t.by)}
-          <div><b>${people[t.by].name}</b><span class="sub">${t.time}</span></div></div>
+          <div><b>${people[t.by].name}</b><span class="sub">${t.time}</span></div>
+          <span class="left">${hoursLeft(t)}시간 남음</span></div>
         <h3>${esc(t.title)}</h3>
         <div class="last">${lastLine(t)}</div>
         <div class="foot">${stack(t)}
@@ -258,17 +295,24 @@
     });
 
     const list = document.getElementById("all");
-    list.innerHTML = "";
-    threads.forEach((t, i) => {
+    list.innerHTML = past.length ? "" : `<div class="empty">24시간이 지난 이야기는 여기에 쌓여요</div>`;
+    past.forEach(t => {
       const b = document.createElement("button");
       b.className = "row";
       b.innerHTML = `<span class="thumb" style="background-image:${t.photo}"></span>
         <div class="mid"><h4>${esc(t.title)}</h4><div class="last">${lastLine(t)}</div></div>
         <span class="time">${t.time}</span>`;
-      b.onclick = () => openThread(i);
+      b.onclick = () => openThread(threads.indexOf(t));
       list.appendChild(b);
     });
   }
+
+  function toggleRooms(open) {
+    const menu = document.getElementById("rooms");
+    menu.hidden = !open;
+    document.getElementById("roomBtn").setAttribute("aria-expanded", open);
+  }
+  document.getElementById("roomBtn").onclick = () => toggleRooms(document.getElementById("rooms").hidden);
 
   function renderThread() {
     const t = threads[current];
@@ -328,7 +372,7 @@
   file.onchange = () => {
     const f = file.files[0];
     if (!f) return;
-    threads.unshift({ by: "me", time: now(), title: "새 사진", unread: 0, tags: ["새 스레드"],
+    threads.unshift({ by: "me", at: Date.now(), time: now(), title: "새 사진", unread: 0, tags: ["새 스레드"],
       photo: `url(${URL.createObjectURL(f)})`, replies: [] });
     file.value = "";
     renderHome();
