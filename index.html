@@ -34,6 +34,9 @@
   .thread { transform: translateX(100%); }
   .app.open .thread { transform: none; }
   .app.open .home { transform: translateX(-25%); }
+  .mine { transform: translateX(-100%); }
+  .app.mine-open .mine { transform: none; }
+  .app.mine-open .home { transform: translateX(25%); }
   .scroll { flex: 1; overflow-y: auto; }
 
   /* 상단 */
@@ -180,6 +183,47 @@
   .thread footer { display: flex; background: #ffffffeb; backdrop-filter: blur(12px); min-height: 52px; border-top: 1px solid #ffffff55; }
   .thread footer textarea { flex: 1; padding: 14px 16px; max-height: 120px; }
 
+  /* 내 홈 */
+  .mine .top { padding: 0 8px 0 0; }
+  .mine .top .back { width: 52px; height: 52px; font-size: 20px; }
+  .mine .top h1 { flex: 1; font-size: 17px; font-weight: 700; }
+  .owners { display: flex; gap: 14px; padding: 4px 20px 12px; overflow-x: auto; border-bottom: 1px solid var(--line); }
+  .owners button { display: flex; flex-direction: column; align-items: center; gap: 4px; font-size: 11px; color: var(--slate); flex: none; }
+  .owners .av { width: 44px; height: 44px; font-size: 15px; border: 2px solid transparent; box-sizing: content-box; }
+  .owners button.on { color: var(--ink); font-weight: 700; }
+  .owners button.on .av { border-color: var(--deep); }
+  .homes { display: flex; gap: 8px; overflow-x: auto; padding: 10px 20px 0; }
+  .homes button { flex: none; font-size: 13px; padding: 6px 14px; border-radius: 999px; background: #fff; border: 1px solid var(--line); color: var(--slate); }
+  .homes button.on { background: var(--ink); border-color: var(--ink); color: #fff; }
+  .viewers { display: flex; align-items: center; flex-wrap: wrap; gap: 6px; padding: 10px 20px 12px; font-size: 12px; color: var(--slate); }
+  .viewers button { display: inline-flex; align-items: center; gap: 4px; padding: 3px 10px 3px 3px; border-radius: 999px; border: 1px solid var(--line); background: #fff; opacity: .55; }
+  .viewers button.on { opacity: 1; border-color: var(--deep); color: var(--ink); }
+  .board {
+    position: relative; aspect-ratio: 4 / 5; max-width: 100%; overflow: hidden; touch-action: none;
+    background: radial-gradient(#d6c7b066 1px, transparent 1.5px) 0 0 / 16px 16px, #f6f0e6;
+    border-block: 1px solid var(--line);
+  }
+  .profile { position: absolute; left: 6%; top: 5%; width: 52%; background: #fff; padding: 14px; border: 1px solid var(--line); }
+  .profile .av { width: 48px; height: 48px; font-size: 18px; }
+  .profile b { display: block; font-size: 16px; margin-top: 8px; }
+  .profile p { font-size: 13px; color: var(--slate); margin-top: 2px; }
+  .item { position: absolute; transform: translate(-50%, -50%) rotate(var(--r)); user-select: none; }
+  .item.mine-item { cursor: grab; }
+  .item.memo { width: 120px; padding: 10px 10px 8px; font-size: 13px; line-height: 1.45; color: var(--ink); box-shadow: 0 4px 10px #6b728026; }
+  .item.memo .by { display: flex; align-items: center; gap: 4px; font-size: 10px; color: var(--slate); margin-top: 6px; }
+  .item.sticker { font-size: 42px; line-height: 1; filter: drop-shadow(0 3px 4px #0002); }
+  .locked { padding: 60px 20px; text-align: center; color: var(--slate); font-size: 14px; }
+  .tools { display: flex; flex-wrap: wrap; align-items: center; gap: 4px; padding: 10px 12px; border-bottom: 1px solid var(--line); background: #fff; }
+  .tools .emo { font-size: 21px; width: 34px; height: 34px; border-radius: 50%; }
+  .tools .emo:hover { background: var(--cream); }
+  .tools .memo-btn { margin-left: auto; height: 36px; padding: 0 14px; background: var(--deep); color: #fff; font-size: 13px; }
+  .memo-form { display: flex; align-items: stretch; border-bottom: 1px solid var(--line); background: #fff; }
+  .memo-form textarea { flex: 1; padding: 12px 16px; font-size: 14px; }
+  .memo-form .colors { display: flex; flex-direction: column; justify-content: center; gap: 4px; padding: 0 8px; }
+  .memo-form .colors button { width: 18px; height: 18px; border: 2px solid transparent; }
+  .memo-form .colors button.on { border-color: var(--ink); }
+  .hint { font-size: 11px; color: var(--slate); padding: 10px 20px 24px; }
+
   @keyframes rise { from { opacity: 0; transform: translateY(6px); } }
   @keyframes up { from { transform: translateY(100%); } }
   @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
@@ -189,7 +233,7 @@
 <div class="app" id="app">
   <section class="view home">
     <div class="top">
-      <span class="me">나</span>
+      <button class="me" id="meBtn" aria-label="내 홈">나</button>
       <div class="seg" id="seg">
         <button class="on" data-v="feed" aria-label="피드"><svg viewBox="0 0 24 24"><path d="M4 5h16v11H9l-5 4z"/></svg></button>
         <button data-v="map" aria-label="지도"><svg viewBox="0 0 24 24"><path d="M3 6l6-2 6 2 6-2v14l-6 2-6-2-6 2z M9 4v14 M15 6v14"/></svg></button>
@@ -268,6 +312,32 @@
       <textarea id="msg" rows="1" placeholder="스레드에 답장"></textarea>
       <button class="send" id="send">보내기</button>
     </footer>
+  </section>
+
+  <section class="view mine" id="mineView">
+    <div class="top">
+      <button class="back" id="mineBack" aria-label="뒤로">←</button>
+      <h1 id="mineTitle"></h1>
+    </div>
+    <div class="scroll">
+      <div class="owners" id="owners"></div>
+      <div id="ownerTools">
+        <div class="homes" id="homes"></div>
+        <div class="viewers" id="viewers"></div>
+      </div>
+      <div class="tools" id="tools">
+        <span id="emos"></span>
+        <button class="memo-btn" id="memoBtn">메모 붙이기</button>
+      </div>
+      <div class="memo-form" id="memoForm" hidden>
+        <textarea id="memoText" rows="2" maxlength="60" placeholder="메모를 남겨요"></textarea>
+        <div class="colors" id="memoColors"></div>
+        <button class="send" id="memoPost">붙이기</button>
+      </div>
+      <div class="board" id="board"></div>
+      <div class="locked" id="locked" hidden></div>
+      <p class="hint">내가 붙인 메모와 스티커는 끌어서 옮길 수 있어요.</p>
+    </div>
   </section>
 </div>
 
@@ -656,6 +726,166 @@
     renderHome();
     openThread(0);
   };
+
+  // 내 홈: 여러 개의 홈, 홈마다 볼 수 있는 사람을 고름. 방문자는 메모·스티커를 붙이고 감
+  const homes = {
+    me: [
+      { name: "메인", viewers: ["jiwoo", "hana", "seo"], bio: "요즘 러닝에 빠짐 🏃", items: [
+        { type: "memo", by: "jiwoo", text: "다음 주 카페 투어 같이 가자!!", color: "#BFEFE0", x: 72, y: 22, r: 4 },
+        { type: "sticker", by: "hana", emoji: "🍀", x: 82, y: 48, r: -8 },
+        { type: "memo", by: "seo", text: "점심 7점 준 거 아직 기억함", color: "#F3E3C8", x: 30, y: 58, r: -5 },
+        { type: "sticker", by: "jiwoo", emoji: "🐱", x: 60, y: 78, r: 6 },
+      ] },
+      { name: "찐친", viewers: ["jiwoo"], bio: "여기는 지우만 와", items: [
+        { type: "memo", by: "jiwoo", text: "비밀 기지 ㅋㅋ", color: "#fff", x: 65, y: 40, r: 3 },
+      ] },
+    ],
+    jiwoo: [{ name: "지우네", viewers: ["me", "hana"], bio: "☕ 카페 투어 중", items: [
+      { type: "sticker", by: "hana", emoji: "☕", x: 75, y: 30, r: 10 },
+      { type: "memo", by: "hana", text: "연남 그 카페 어디야", color: "#F3E3C8", x: 40, y: 62, r: -3 },
+    ] }],
+    hana: [{ name: "하나네", viewers: ["jiwoo"], bio: "", items: [] }],
+    seo: [{ name: "서진이네", viewers: ["me", "jiwoo", "hana"], bio: "시험 기간 📚", items: [] }],
+  };
+  const emojis = ["🍀", "🐱", "🎵", "☕", "🌙", "👍", "💌"];
+  const memoColors = ["#BFEFE0", "#F3E3C8", "#fff", "#D6C7B0"];
+  let owner = "me", homeIdx = 0, memoColor = memoColors[0];
+
+  // 내가 볼 수 있는 홈만
+  const visibleHomes = id => id === "me" ? homes.me : (homes[id] || []).filter(h => h.viewers.includes("me"));
+
+  function renderMine() {
+    const mine = owner === "me";
+    const list = visibleHomes(owner);
+    const home = list[homeIdx];
+    document.getElementById("mineTitle").textContent = mine ? "내 홈" : `${people[owner].name}의 홈`;
+
+    const ow = document.getElementById("owners");
+    ow.innerHTML = "";
+    Object.keys(people).forEach(id => {
+      const b = document.createElement("button");
+      if (id === owner) b.className = "on";
+      b.innerHTML = `${av(id)}${id === "me" ? "내 홈" : people[id].name}`;
+      b.onclick = () => { owner = id; homeIdx = 0; renderMine(); };
+      ow.appendChild(b);
+    });
+
+    // 홈 탭: 내 홈은 모두, 친구 홈은 나에게 열린 것만
+    const hs = document.getElementById("homes");
+    hs.innerHTML = "";
+    list.forEach((h, k) => {
+      const b = document.createElement("button");
+      b.textContent = h.name;
+      if (k === homeIdx) b.className = "on";
+      b.onclick = () => { homeIdx = k; renderMine(); };
+      hs.appendChild(b);
+    });
+    if (mine) {
+      const add = document.createElement("button");
+      add.textContent = "＋ 새 홈";
+      add.onclick = () => {
+        homes.me.push({ name: `새 홈 ${homes.me.length}`, viewers: [], bio: "", items: [] });
+        homeIdx = homes.me.length - 1;
+        renderMine();
+      };
+      hs.appendChild(add);
+    }
+
+    const vw = document.getElementById("viewers");
+    vw.hidden = !mine;
+    if (mine) {
+      vw.innerHTML = "<span>볼 수 있는 사람</span>";
+      Object.keys(people).filter(id => id !== "me").forEach(id => {
+        const b = document.createElement("button");
+        if (home.viewers.includes(id)) b.className = "on";
+        b.innerHTML = `${av(id, "s")}${people[id].name}`;
+        b.onclick = () => {
+          home.viewers = home.viewers.includes(id) ? home.viewers.filter(v => v !== id) : [...home.viewers, id];
+          renderMine();
+        };
+        vw.appendChild(b);
+      });
+    }
+
+    const board = document.getElementById("board");
+    const locked = document.getElementById("locked");
+    board.hidden = !home;
+    document.getElementById("tools").hidden = !home;
+    locked.hidden = !!home;
+    if (!home) {
+      document.getElementById("memoForm").hidden = true;
+      locked.textContent = `${people[owner].name}의 홈은 아직 나에게 열려 있지 않아요`;
+      return;
+    }
+    board.innerHTML = `<div class="profile">${av(owner)}<b>${esc(home.name)}</b><p>${esc(home.bio || "소개가 아직 없어요")}</p></div>`;
+    home.items.forEach(it => {
+      const d = document.createElement("div");
+      d.className = `item ${it.type}` + (it.by === "me" ? " mine-item" : "");
+      d.style.left = it.x + "%"; d.style.top = it.y + "%";
+      d.style.setProperty("--r", it.r + "deg");
+      if (it.type === "memo") {
+        d.style.background = it.color;
+        d.innerHTML = `${esc(it.text)}<div class="by">${av(it.by, "s")}${people[it.by].name}</div>`;
+      } else {
+        d.textContent = it.emoji;
+        d.title = `${people[it.by].name}의 스티커`;
+      }
+      if (it.by === "me") drag(d, it, board);
+      board.appendChild(d);
+    });
+  }
+
+  // 내가 붙인 것만 끌어서 옮기기
+  function drag(el, it, board) {
+    el.onpointerdown = e => {
+      el.setPointerCapture(e.pointerId);
+      const rect = board.getBoundingClientRect();
+      el.onpointermove = m => {
+        it.x = Math.min(95, Math.max(5, (m.clientX - rect.left) / rect.width * 100));
+        it.y = Math.min(95, Math.max(5, (m.clientY - rect.top) / rect.height * 100));
+        el.style.left = it.x + "%"; el.style.top = it.y + "%";
+      };
+      el.onpointerup = () => { el.onpointermove = null; };
+    };
+  }
+
+  const tilt = () => Math.round(Math.random() * 16 - 8);
+  const currentHome = () => visibleHomes(owner)[homeIdx];
+  emojis.forEach(em => {
+    const b = document.createElement("button");
+    b.className = "emo"; b.textContent = em; b.setAttribute("aria-label", em + " 스티커 붙이기");
+    b.onclick = () => {
+      currentHome().items.push({ type: "sticker", by: "me", emoji: em, x: 20 + Math.random() * 60, y: 45 + Math.random() * 45, r: tilt() });
+      renderMine();
+    };
+    document.getElementById("emos").appendChild(b);
+  });
+  memoColors.forEach(c => {
+    const b = document.createElement("button");
+    b.style.background = c; b.setAttribute("aria-label", "메모 색");
+    if (c === memoColor) b.className = "on";
+    b.onclick = () => {
+      memoColor = c;
+      document.querySelectorAll("#memoColors button").forEach(x => x.classList.toggle("on", x === b));
+    };
+    document.getElementById("memoColors").appendChild(b);
+  });
+  document.getElementById("memoBtn").onclick = () => {
+    const f = document.getElementById("memoForm");
+    f.hidden = !f.hidden;
+    if (!f.hidden) document.getElementById("memoText").focus();
+  };
+  document.getElementById("memoPost").onclick = () => {
+    const text = document.getElementById("memoText").value.trim();
+    if (!text) { document.getElementById("memoText").focus(); return; }
+    currentHome().items.push({ type: "memo", by: "me", text, color: memoColor, x: 50, y: 50, r: tilt() });
+    document.getElementById("memoText").value = "";
+    document.getElementById("memoForm").hidden = true;
+    renderMine();
+  };
+
+  document.getElementById("meBtn").onclick = () => { owner = "me"; homeIdx = 0; renderMine(); app.classList.add("mine-open"); };
+  document.getElementById("mineBack").onclick = () => app.classList.remove("mine-open");
 
   renderHome();
 </script>
