@@ -79,10 +79,10 @@
   .hello { padding: 8px 0 16px; }
   .hello p { color: var(--slate); font-size: 15px; }
   .hello h1 { font-size: 23px; font-weight: 700; margin-top: 2px; }
-  .hello-row { display: flex; align-items: center; gap: 10px; padding-right: 20px; }
+  .hello-row { display: flex; align-items: center; gap: 4px; padding-left: 20px; }
   .new {
-    width: 40px; height: 40px; border-radius: 50%; background: var(--deep); color: #fff;
-    font-size: 20px; box-shadow: 0 6px 14px #4f9a8755;
+    width: 30px; height: 30px; flex: none; border-radius: 50%; background: var(--deep); color: #fff;
+    font-size: 16px; line-height: 1; box-shadow: 0 4px 10px #4f9a8744;
   }
   .rail { display: flex; gap: 14px; overflow-x: auto; padding: 4px 20px 16px; scroll-snap-type: x mandatory; scroll-padding-inline: 20px; }
   .rail::-webkit-scrollbar { display: none; }
@@ -110,7 +110,7 @@
 
   .sec { display: flex; align-items: center; justify-content: space-between; padding: 8px 20px 10px; }
   .sec h2 { font-size: 18px; font-weight: 700; }
-  .rooms { flex: 1; min-width: 0; display: flex; gap: 8px; overflow-x: auto; padding: 6px 4px 8px 20px; scroll-snap-type: x proximity; }
+  .rooms { flex: 1; min-width: 0; display: flex; gap: 8px; overflow-x: auto; padding: 6px 20px 8px 4px; scroll-snap-type: x proximity; }
   .rooms::-webkit-scrollbar { display: none; }
   .rooms button { flex: none; white-space: nowrap; scroll-snap-align: start; }
   .rooms button { font-size: 13px; padding: 6px 14px; border-radius: 999px; background: var(--card); box-shadow: var(--shadow); color: var(--slate); }
@@ -182,8 +182,8 @@
     </div>
     <div class="scroll">
       <div class="hello hello-row">
-        <div class="rooms" id="rooms"></div>
         <button class="new" id="upload" aria-label="새 스레드 시작" aria-expanded="false">＋</button>
+        <div class="rooms" id="rooms"></div>
         <input type="file" id="file" accept="image/*" hidden>
       </div>
       <div class="sheet" id="sheet" hidden>
