@@ -5,109 +5,164 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>PatPat</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Gowun+Dodum&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
 <style>
   :root {
     --mint: #BFEFE0;
     --teal: #87CBB9;
+    --deep: #4f9a87;
     --sand: #D6C7B0;
     --cream: #F3EDE2;
     --slate: #6B7280;
-    --ink: #3f4450;
+    --ink: #2f3440;
+    --card: #fbf8f3;
+    --shadow: 0 8px 20px #6b72801f, 0 1px 2px #6b728014;
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
   html, body { height: 100%; }
   body {
     background: var(--cream); color: var(--ink);
-    font-family: "Gowun Dodum", system-ui, sans-serif;
+    font-family: "Noto Sans KR", system-ui, sans-serif; letter-spacing: -0.01em;
     display: flex; justify-content: center; overflow: hidden;
   }
-  button { font: inherit; cursor: pointer; }
-  .app { position: relative; width: 100%; max-width: 560px; height: 100%; overflow: hidden; }
-  .view { position: absolute; inset: 0; display: flex; flex-direction: column; transition: transform .3s ease; }
-  .thread { background: var(--cream); transform: translateX(100%); }
+  button { font: inherit; color: inherit; cursor: pointer; border: 0; background: none; }
+  .app { position: relative; width: 100%; max-width: 480px; height: 100%; overflow: hidden; }
+  .view { position: absolute; inset: 0; display: flex; flex-direction: column; background: var(--cream); transition: transform .3s ease; }
+  .thread { transform: translateX(100%); }
   .app.open .thread { transform: none; }
-  .app.open .feed { transform: translateX(-30%); }
+  .app.open .home { transform: translateX(-25%); }
 
-  header { display: flex; align-items: center; gap: 12px; padding: 18px 20px 12px; }
-  header h1 { font-size: 22px; font-weight: 400; flex: 1; }
-  header p { font-size: 13px; color: var(--slate); }
-  .back { border: 0; background: none; font-size: 22px; color: var(--slate); }
-  .upload {
-    border: 0; background: var(--teal); color: #fff; font-size: 14px;
-    padding: 8px 14px; border-radius: 999px;
+  /* 공통 */
+  .top { display: flex; align-items: center; justify-content: space-between; padding: 20px 20px 8px; }
+  .icon-btn {
+    width: 40px; height: 40px; border-radius: 12px; background: var(--card);
+    box-shadow: var(--shadow); display: grid; place-items: center; color: var(--slate); font-size: 18px;
   }
-
-  /* 피드: 사진 = 대화 주제 */
-  .posts { flex: 1; overflow-y: auto; padding: 4px 16px 32px; display: flex; flex-direction: column; gap: 22px; }
-  .post { background: none; border: 0; text-align: left; color: inherit; display: flex; flex-direction: column; gap: 10px; }
-  .photo {
-    width: 100%; aspect-ratio: 4 / 5; border-radius: 20px; background-size: cover; background-position: center;
-    position: relative; overflow: hidden;
-  }
-  .photo .cap {
-    position: absolute; left: 0; right: 0; bottom: 0; padding: 40px 18px 16px;
-    background: linear-gradient(#0000, #0006); color: #fff; font-size: 17px;
-  }
-  .meta { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--slate); padding: 0 4px; }
-  .avatars { display: flex; }
+  .scroll { flex: 1; overflow-y: auto; padding-bottom: 28px; }
   .av {
-    width: 22px; height: 22px; border-radius: 50%; border: 2px solid var(--cream);
-    display: grid; place-items: center; font-size: 11px; color: #fff; margin-left: -6px;
+    width: 28px; height: 28px; border-radius: 50%; display: inline-grid; place-items: center;
+    font-size: 12px; font-weight: 500; color: #fff; border: 2px solid var(--card); flex: none;
   }
-  .av:first-child { margin-left: 0; }
-  .peek { font-size: 14px; color: var(--ink); padding: 0 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .peek b { font-weight: 400; color: var(--slate); margin-right: 6px; }
+  .stack { display: flex; align-items: center; }
+  .stack .av { margin-left: -8px; }
+  .stack .av:first-child { margin-left: 0; }
+  .stack small { margin-left: 6px; font-size: 12px; color: inherit; opacity: .8; }
+  .thumb { width: 36px; height: 36px; border-radius: 10px; flex: none; background-size: cover; background-position: center; }
+  .plus {
+    width: 34px; height: 34px; border-radius: 50%; border: 1.5px solid currentColor;
+    display: grid; place-items: center; font-size: 18px; line-height: 1;
+  }
+  .count {
+    min-width: 26px; height: 26px; padding: 0 8px; border-radius: 999px; background: var(--teal);
+    color: #fff; font-size: 12px; font-weight: 700; display: grid; place-items: center;
+  }
+
+  /* 홈 */
+  .hello { padding: 12px 20px 18px; }
+  .hello p { color: var(--slate); font-size: 15px; }
+  .hello h1 { font-size: 23px; font-weight: 700; margin-top: 2px; }
+  .hello-row { display: flex; align-items: flex-end; justify-content: space-between; }
+  .new {
+    width: 40px; height: 40px; border-radius: 50%; background: var(--deep); color: #fff;
+    font-size: 20px; box-shadow: 0 6px 14px #4f9a8755;
+  }
+  .rail { display: flex; gap: 14px; overflow-x: auto; padding: 4px 20px 16px; scroll-snap-type: x mandatory; }
+  .rail::-webkit-scrollbar { display: none; }
+  .tcard {
+    flex: none; width: 220px; border-radius: 22px; padding: 16px; text-align: left;
+    background: var(--card); box-shadow: var(--shadow); scroll-snap-align: start;
+    display: flex; flex-direction: column; gap: 12px;
+  }
+  .tcard.big { width: 250px; background: var(--deep); color: #fff; }
+  .tcard.big .sub, .tcard.big .last { color: #e6f6f0; }
+  .tcard.mint { background: var(--mint); }
+  .who-row { display: flex; align-items: center; gap: 10px; }
+  .who-row b { font-size: 13px; font-weight: 700; display: block; }
+  .sub { font-size: 11px; color: var(--slate); }
+  .tcard h3 { font-size: 16px; font-weight: 700; line-height: 1.35; }
+  .last { font-size: 12px; color: var(--slate); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .tcard .foot { display: flex; align-items: center; justify-content: space-between; }
+  .unread { display: inline-flex; align-items: center; gap: 6px; font-size: 11px; }
+  .unread i { width: 7px; height: 7px; border-radius: 50%; background: #f0a58a; }
+
+  .sec { display: flex; align-items: center; justify-content: space-between; padding: 8px 20px 10px; }
+  .sec h2 { font-size: 18px; font-weight: 700; }
+  .list { display: flex; flex-direction: column; gap: 10px; padding: 0 20px; }
+  .row {
+    display: flex; align-items: center; gap: 12px; padding: 12px; border-radius: 18px;
+    background: var(--card); box-shadow: var(--shadow); text-align: left; width: 100%;
+  }
+  .row .mid { flex: 1; min-width: 0; }
+  .row h4 { font-size: 14px; font-weight: 500; }
+  .row .time { font-size: 11px; color: var(--slate); align-self: flex-start; }
 
   /* 스레드 */
-  .t-body { flex: 1; overflow-y: auto; padding: 0 16px 16px; }
-  .t-photo { aspect-ratio: 4 / 3; }
-  .replies { display: flex; flex-direction: column; gap: 16px; margin-top: 18px; }
-  .reply { display: grid; grid-template-columns: 32px 1fr; gap: 10px; animation: rise .3s ease both; }
-  .reply .av { width: 32px; height: 32px; font-size: 13px; border: 0; margin: 0; }
-  .reply .who { font-size: 13px; color: var(--slate); }
-  .reply .who span { margin-left: 6px; font-size: 12px; opacity: .7; }
-  .reply .text { font-size: 16px; line-height: 1.55; white-space: pre-wrap; word-break: break-word; }
-  .reacts { display: flex; gap: 6px; margin-top: 6px; }
-  .react {
-    border: 1px solid var(--sand); background: #fff8; border-radius: 999px;
-    font-size: 12px; padding: 2px 8px; color: var(--slate);
+  .t-head { padding: 4px 20px 14px; }
+  .t-head h1 { font-size: 21px; font-weight: 700; margin-top: 10px; line-height: 1.35; }
+  .chips { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px; }
+  .chip { font-size: 12px; padding: 5px 12px; border-radius: 999px; background: var(--card); color: var(--slate); box-shadow: var(--shadow); }
+  .chip.on { background: var(--deep); color: #fff; }
+  .replies { display: flex; flex-direction: column; gap: 14px; padding: 0 20px; }
+  .reply { display: grid; grid-template-columns: 58px 1fr; gap: 10px; align-items: start; animation: rise .3s ease both; }
+  .pill {
+    font-size: 11px; font-weight: 500; text-align: center; padding: 5px 0; border-radius: 999px;
+    background: var(--sand); color: #fff; margin-top: 12px;
   }
-  .react.on { background: var(--mint); border-color: var(--teal); color: var(--ink); }
+  .bubble { background: var(--card); border-radius: 18px; padding: 12px 14px; box-shadow: var(--shadow); }
+  .reply.me .bubble { background: var(--mint); }
+  .reply.me .pill { background: var(--teal); }
+  .bubble .who-row { gap: 8px; }
+  .bubble .who-row .av { width: 24px; height: 24px; font-size: 11px; border: 0; }
+  .bubble p { font-size: 15px; line-height: 1.55; margin-top: 6px; white-space: pre-wrap; word-break: break-word; }
+  .reacts { display: flex; gap: 6px; margin-top: 8px; flex-wrap: wrap; }
+  .react { font-size: 12px; padding: 2px 9px; border-radius: 999px; background: #fff9; border: 1px solid #d6c7b0aa; color: var(--slate); }
+  .react.on { background: var(--teal); border-color: var(--teal); color: #fff; }
 
   footer { padding: 10px 16px 18px; }
   .input {
-    display: flex; align-items: flex-end; background: #fff;
-    border-radius: 24px; padding: 6px 6px 6px 18px; border: 1px solid #d6c7b088;
+    display: flex; align-items: flex-end; gap: 8px; background: var(--card); box-shadow: var(--shadow);
+    border-radius: 22px; padding: 6px 6px 6px 16px;
   }
   textarea {
-    flex: 1; border: 0; outline: 0; resize: none; background: none;
-    font: inherit; font-size: 16px; color: var(--ink); line-height: 1.5; padding: 6px 0; max-height: 120px;
+    flex: 1; border: 0; outline: 0; resize: none; background: none; font: inherit;
+    font-size: 15px; color: var(--ink); line-height: 1.5; padding: 7px 0; max-height: 120px;
   }
-  .send { border: 0; background: var(--teal); color: #fff; font-size: 14px; padding: 9px 16px; border-radius: 18px; }
+  .send { background: var(--deep); color: #fff; font-size: 14px; font-weight: 500; padding: 9px 16px; border-radius: 16px; }
+  :focus-visible { outline: 2px solid var(--deep); outline-offset: 2px; }
   @keyframes rise { from { opacity: 0; transform: translateY(6px); } }
 </style>
 </head>
 <body>
 <div class="app" id="app">
-  <section class="view feed">
-    <header>
-      <div style="flex:1"><h1>우리 넷</h1><p>사진 하나에 이야기 하나</p></div>
-      <button class="upload" id="upload">사진 올리기</button>
-      <input type="file" id="file" accept="image/*" hidden>
-    </header>
-    <main class="posts" id="posts"></main>
+  <section class="view home">
+    <div class="top">
+      <span class="av" style="width:40px;height:40px;font-size:15px;background:var(--teal)">나</span>
+      <button class="icon-btn" aria-label="검색">⌕</button>
+    </div>
+    <div class="scroll">
+      <div class="hello hello-row">
+        <div><p>안녕, 민트</p><h1>새 이야기가 <span id="newCount"></span>개 있어요</h1></div>
+        <button class="new" id="upload" aria-label="사진으로 스레드 시작">＋</button>
+        <input type="file" id="file" accept="image/*" hidden>
+      </div>
+      <div class="rail" id="hot"></div>
+      <div class="sec"><h2>우리 넷</h2><span class="count" id="allCount"></span></div>
+      <div class="list" id="all"></div>
+    </div>
   </section>
 
   <section class="view thread">
-    <header>
-      <button class="back" id="back" aria-label="뒤로">←</button>
-      <div style="flex:1"><h1 id="tTitle"></h1><p id="tSub"></p></div>
-    </header>
-    <div class="t-body" id="tBody"></div>
+    <div class="top">
+      <button class="icon-btn" id="back" aria-label="뒤로">←</button>
+      <button class="icon-btn" aria-label="더보기">⋯</button>
+    </div>
+    <div class="scroll" id="tScroll">
+      <div class="t-head" id="tHead"></div>
+      <div class="replies" id="replies"></div>
+    </div>
     <footer>
       <div class="input">
-        <textarea id="msg" rows="1" placeholder="이 사진에 한마디"></textarea>
+        <textarea id="msg" rows="1" placeholder="스레드에 답장"></textarea>
         <button class="send" id="send">보내기</button>
       </div>
     </footer>
@@ -116,97 +171,122 @@
 
 <script>
   const people = {
-    me:   { name: "나",   color: "#87CBB9" },
-    jiwoo:{ name: "지우", color: "#D6C7B0" },
-    hana: { name: "하나", color: "#6B7280" },
-    seo:  { name: "서진", color: "#a9d9c9" },
+    me:    { name: "나",   color: "#87CBB9" },
+    jiwoo: { name: "지우", color: "#c9b391" },
+    hana:  { name: "하나", color: "#6B7280" },
+    seo:   { name: "서진", color: "#7fb8a8" },
   };
-  // 샘플 사진 대신 그라데이션
-  const posts = [
-    { by: "jiwoo", time: "방금", caption: "퇴근길 하늘 미쳤다",
-      bg: "linear-gradient(160deg,#f6c9a8,#e9a3a0 45%,#6B7280)",
+  // 샘플 사진 자리는 그라데이션
+  const threads = [
+    { by: "jiwoo", time: "12:40", title: "퇴근길 하늘 미쳤다", unread: 2, tags: ["하늘", "합정"],
+      photo: "linear-gradient(160deg,#f6c9a8,#e9a3a0 50%,#6B7280)",
       replies: [
-        { by: "hana", time: "방금", text: "어디야 이거?? 색감 뭐임", reacts: { "😮": 2 } },
-        { by: "jiwoo", time: "방금", text: "합정역 앞 육교", reacts: {} },
+        { by: "hana", time: "12:42", text: "어디야 이거?? 색감 뭐임", reacts: { "😮": 2 } },
+        { by: "jiwoo", time: "12:43", text: "합정역 앞 육교", reacts: {} },
       ] },
-    { by: "seo", time: "2시간 전", caption: "오늘의 점심 평가 부탁",
-      bg: "linear-gradient(200deg,#F3EDE2,#D6C7B0 50%,#a88f6a)",
+    { by: "hana", time: "11:05", title: "토요일에 여기 갈 사람", unread: 1, tags: ["약속"],
+      photo: "linear-gradient(170deg,#BFEFE0,#87CBB9 55%,#4d8d7d)",
+      replies: [{ by: "jiwoo", time: "11:20", text: "나 토요일 가능", reacts: { "👍": 2 } }] },
+    { by: "seo", time: "09:30", title: "오늘의 점심 평가 부탁", unread: 0, tags: ["점심"],
+      photo: "linear-gradient(200deg,#F3EDE2,#D6C7B0 50%,#a88f6a)",
       replies: [
-        { by: "me", time: "1시간 전", text: "7점. 김치가 부족해 보임", reacts: { "😂": 3 } },
-        { by: "hana", time: "1시간 전", text: "나는 9점 줌", reacts: {} },
-        { by: "seo", time: "58분 전", text: "김치 리필 무한이었음 다들 오해", reacts: { "😂": 1 } },
+        { by: "me", time: "09:41", text: "7점. 김치가 부족해 보임", reacts: { "😂": 3 } },
+        { by: "seo", time: "09:58", text: "김치 리필 무한이었음 다들 오해", reacts: { "😂": 1 } },
       ] },
-    { by: "hana", time: "어제", caption: "주말에 여기 갈 사람",
-      bg: "linear-gradient(170deg,#BFEFE0,#87CBB9 55%,#4d8d7d)",
-      replies: [
-        { by: "jiwoo", time: "어제", text: "나 토요일 가능", reacts: { "👍": 2 } },
-      ] },
+    { by: "me", time: "어제", title: "고양이 근황", unread: 0, tags: ["고양이"],
+      photo: "linear-gradient(140deg,#e8e0d2,#b9ab95)",
+      replies: [{ by: "hana", time: "어제", text: "볼살 실화냐", reacts: { "❤️": 3 } }] },
   ];
 
   const app = document.getElementById("app");
   const msg = document.getElementById("msg");
   let current = null;
-
-  function av(id) {
-    const p = people[id];
-    return `<span class="av" style="background:${p.color}">${p.name[0]}</span>`;
-  }
   const esc = s => s.replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+  const av = id => `<span class="av" style="background:${people[id].color}">${people[id].name[0]}</span>`;
+  const stack = t => {
+    const ids = [...new Set([t.by, ...t.replies.map(r => r.by)])];
+    return `<span class="stack">${ids.slice(0, 3).map(av).join("")}${ids.length > 3 ? `<small>+${ids.length - 3}</small>` : ""}</span>`;
+  };
+  const lastLine = t => {
+    const r = t.replies[t.replies.length - 1];
+    return r ? `${people[r.by].name}: ${esc(r.text)}` : "아직 답장이 없어요";
+  };
 
-  function renderFeed() {
-    const el = document.getElementById("posts");
-    el.innerHTML = "";
-    posts.forEach((p, i) => {
-      const last = p.replies[p.replies.length - 1];
-      const who = [...new Set(p.replies.map(r => r.by))].slice(0, 3);
+  function renderHome() {
+    const hot = threads.filter(t => t.unread);
+    document.getElementById("newCount").textContent = hot.length;
+    document.getElementById("allCount").textContent = threads.length;
+
+    const rail = document.getElementById("hot");
+    rail.innerHTML = "";
+    (hot.length ? hot : threads.slice(0, 2)).forEach((t, k) => {
       const b = document.createElement("button");
-      b.className = "post";
+      b.className = "tcard " + (k === 0 ? "big" : "mint");
       b.innerHTML = `
-        <div class="photo" style="background-image:${p.bg}"><div class="cap">${esc(p.caption)}</div></div>
-        <div class="meta"><span class="avatars">${who.map(av).join("")}</span>
-          ${people[p.by].name} · ${p.time} · 댓글 ${p.replies.length}</div>
-        ${last ? `<div class="peek"><b>${people[last.by].name}</b>${esc(last.text)}</div>` : ""}`;
+        <div class="who-row"><span class="thumb" style="background-image:${t.photo}"></span>
+          <div><b>${people[t.by].name}</b><span class="sub">${t.time}</span></div></div>
+        <h3>${esc(t.title)}</h3>
+        <div class="last">${lastLine(t)}</div>
+        <div class="foot">${stack(t)}
+          ${t.unread ? `<span class="unread"><i></i>새 답장 ${t.unread}</span>` : ""}<span class="plus">＋</span></div>`;
+      b.onclick = () => openThread(threads.indexOf(t));
+      rail.appendChild(b);
+    });
+
+    const list = document.getElementById("all");
+    list.innerHTML = "";
+    threads.forEach((t, i) => {
+      const b = document.createElement("button");
+      b.className = "row";
+      b.innerHTML = `<span class="thumb" style="background-image:${t.photo}"></span>
+        <div class="mid"><h4>${esc(t.title)}</h4><div class="last">${lastLine(t)}</div></div>
+        <span class="time">${t.time}</span>`;
       b.onclick = () => openThread(i);
-      el.appendChild(b);
+      list.appendChild(b);
     });
   }
 
   function renderThread() {
-    const p = posts[current];
-    document.getElementById("tTitle").textContent = p.caption;
-    document.getElementById("tSub").textContent = `${people[p.by].name} · ${p.time}`;
-    const body = document.getElementById("tBody");
-    body.innerHTML = `<div class="photo t-photo" style="background-image:${p.bg}"></div><div class="replies"></div>`;
-    const list = body.querySelector(".replies");
-    p.replies.forEach(r => {
+    const t = threads[current];
+    document.getElementById("tHead").innerHTML = `
+      <div class="who-row"><span class="thumb" style="width:44px;height:44px;background-image:${t.photo}"></span>
+        <div><b>${people[t.by].name}</b><span class="sub">${t.time} · 답장 ${t.replies.length}</span></div>
+        <span style="margin-left:auto">${stack(t)}</span></div>
+      <h1>${esc(t.title)}</h1>
+      <div class="chips">${t.tags.map((g, k) => `<span class="chip${k ? "" : " on"}">#${esc(g)}</span>`).join("")}</div>`;
+    const list = document.getElementById("replies");
+    list.innerHTML = "";
+    t.replies.forEach(r => {
       const d = document.createElement("div");
-      d.className = "reply";
+      d.className = "reply" + (r.by === "me" ? " me" : "");
       const reacts = Object.entries(r.reacts).map(([e, n]) =>
         `<button class="react${r.mine === e ? " on" : ""}" data-e="${e}">${e} ${n}</button>`).join("");
-      d.innerHTML = `${av(r.by)}<div>
-        <div class="who">${people[r.by].name}<span>${r.time}</span></div>
-        <div class="text">${esc(r.text)}</div>
-        <div class="reacts">${reacts}<button class="react add" data-e="❤️">+</button></div></div>`;
+      d.innerHTML = `<span class="pill">${r.time}</span>
+        <div class="bubble"><div class="who-row">${av(r.by)}<b>${people[r.by].name}</b></div>
+          <p>${esc(r.text)}</p>
+          <div class="reacts">${reacts}<button class="react" data-e="❤️">＋</button></div></div>`;
       d.querySelectorAll(".react").forEach(btn => btn.onclick = () => toggleReact(r, btn.dataset.e));
       list.appendChild(d);
     });
-    body.scrollTop = body.scrollHeight;
+    const sc = document.getElementById("tScroll");
+    sc.scrollTop = sc.scrollHeight;
   }
 
   function toggleReact(r, e) {
     if (r.mine) { r.reacts[r.mine]--; if (!r.reacts[r.mine]) delete r.reacts[r.mine]; }
-    if (r.mine === e) { r.mine = null; }
+    if (r.mine === e) r.mine = null;
     else { r.reacts[e] = (r.reacts[e] || 0) + 1; r.mine = e; }
     renderThread();
   }
 
-  function openThread(i) { current = i; renderThread(); app.classList.add("open"); }
-  document.getElementById("back").onclick = () => { app.classList.remove("open"); renderFeed(); };
+  function openThread(i) { current = i; threads[i].unread = 0; renderThread(); app.classList.add("open"); }
+  document.getElementById("back").onclick = () => { app.classList.remove("open"); renderHome(); };
 
+  const now = () => new Date().toTimeString().slice(0, 5);
   function send() {
     const text = msg.value.trim();
     if (!text || current === null) return;
-    posts[current].replies.push({ by: "me", time: "방금", text, reacts: {} });
+    threads[current].replies.push({ by: "me", time: now(), text, reacts: {} });
     msg.value = ""; msg.style.height = "auto";
     renderThread();
   }
@@ -216,20 +296,20 @@
   });
   msg.addEventListener("input", () => { msg.style.height = "auto"; msg.style.height = msg.scrollHeight + "px"; });
 
-  // 사진 올리기: 새 스레드 생성
+  // 사진 올리기 → 새 스레드
   const file = document.getElementById("file");
   document.getElementById("upload").onclick = () => file.click();
   file.onchange = () => {
     const f = file.files[0];
     if (!f) return;
-    const url = URL.createObjectURL(f);
-    posts.unshift({ by: "me", time: "방금", caption: "새 사진", bg: `url(${url})`, replies: [] });
+    threads.unshift({ by: "me", time: now(), title: "새 사진", unread: 0, tags: ["새 스레드"],
+      photo: `url(${URL.createObjectURL(f)})`, replies: [] });
     file.value = "";
-    renderFeed();
+    renderHome();
     openThread(0);
   };
 
-  renderFeed();
+  renderHome();
 </script>
 </body>
 </html>
