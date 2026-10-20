@@ -128,6 +128,12 @@
   .dm-btn { margin-top: 12px; font-size: 13px; padding: 7px 14px; border-radius: 999px; background: #ffffffe6; color: var(--ink); }
   .ref { display: flex; align-items: center; gap: 10px; margin-top: 12px; padding: 8px 12px 8px 8px; border-radius: 14px; background: #ffffff33; backdrop-filter: blur(8px); width: fit-content; max-width: 100%; }
   .ref b { display: block; font-size: 13px; font-weight: 500; }
+  .toggle { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; color: var(--slate); }
+  .toggle input { accent-color: var(--deep); width: 16px; height: 16px; }
+  .keep-btn { margin-top: 12px; margin-right: 6px; font-size: 13px; padding: 7px 14px; border-radius: 999px; background: #ffffff33; color: #fff; backdrop-filter: blur(8px); }
+  .keep-btn.on { background: #fff; color: var(--ink); }
+  .keep-note { display: inline-block; margin-top: 12px; font-size: 12px; color: #ffffffcc; }
+  .pin { font-size: 11px; color: var(--slate); }
   .left { font-size: 11px; padding: 2px 8px; border-radius: 999px; background: #0003; backdrop-filter: blur(6px); margin-left: auto; align-self: flex-start; }
   .list { display: flex; flex-direction: column; gap: 10px; padding: 0 20px; }
   .row {
@@ -192,6 +198,7 @@
         <div class="sheet-row">
           <button class="ghost" id="pick">사진 추가</button>
           <span class="picked" id="picked" hidden></span>
+          <label class="toggle"><input type="checkbox" id="allowKeep" checked> 보관 허용</label>
           <button class="send" id="post">올리기</button>
         </div>
       </div>
@@ -231,30 +238,30 @@
   const H = 3600e3, T0 = Date.now();
   const rooms = [
     { name: "우리 넷", threads: [
-      { by: "jiwoo", at: T0 - 0.4 * H, time: "12:40", title: "퇴근길 하늘 미쳤다", unread: 2, tags: ["하늘", "합정"],
+      { by: "jiwoo", at: T0 - 0.4 * H, time: "12:40", title: "퇴근길 하늘 미쳤다", unread: 2, archivable: true, tags: ["하늘", "합정"],
         photo: "linear-gradient(160deg,#f6c9a8,#e9a3a0 50%,#6B7280)",
         replies: [
           { by: "hana", time: "12:42", text: "어디야 이거?? 색감 뭐임", reacts: { "😮": 2 } },
           { by: "jiwoo", time: "12:43", text: "합정역 앞 육교", reacts: {} },
         ] },
-      { by: "hana", at: T0 - 2 * H, time: "11:05", title: "토요일에 여기 갈 사람", unread: 1, tags: ["약속"],
+      { by: "hana", at: T0 - 2 * H, time: "11:05", title: "토요일에 여기 갈 사람", unread: 1, archivable: true, tags: ["약속"],
         photo: "linear-gradient(170deg,#BFEFE0,#87CBB9 55%,#4d8d7d)",
         replies: [{ by: "jiwoo", time: "11:20", text: "나 토요일 가능", reacts: { "👍": 2 } }] },
-      { by: "seo", at: T0 - 5 * H, time: "09:30", title: "오늘의 점심 평가 부탁", unread: 0, tags: ["점심"],
+      { by: "seo", at: T0 - 5 * H, time: "09:30", title: "오늘의 점심 평가 부탁", unread: 0, archivable: true, tags: ["점심"],
         photo: "linear-gradient(200deg,#F3EDE2,#D6C7B0 50%,#a88f6a)",
         replies: [
           { by: "me", time: "09:41", text: "7점. 김치가 부족해 보임", reacts: { "😂": 3 } },
           { by: "seo", time: "09:58", text: "김치 리필 무한이었음 다들 오해", reacts: { "😂": 1 } },
         ] },
-      { by: "me", at: T0 - 30 * H, time: "어제", title: "고양이 근황", unread: 0, tags: ["고양이"],
+      { by: "me", at: T0 - 30 * H, time: "어제", title: "고양이 근황", unread: 0, archivable: true, keptBy: "hana", tags: ["고양이"],
         photo: "linear-gradient(140deg,#e8e0d2,#b9ab95)",
         replies: [{ by: "hana", time: "어제", text: "볼살 실화냐", reacts: { "❤️": 3 } }] },
-      { by: "jiwoo", at: T0 - 75 * H, time: "3일 전", title: "새로 산 키링", unread: 0, tags: ["득템"],
+      { by: "jiwoo", at: T0 - 75 * H, time: "3일 전", title: "새로 산 키링", unread: 0, archivable: false, tags: ["득템"],
         photo: "linear-gradient(120deg,#BFEFE0,#F3EDE2)",
         replies: [{ by: "seo", time: "3일 전", text: "어디서 샀어 나도", reacts: {} }] },
     ] },
     { name: "가족", threads: [
-      { by: "hana", at: T0 - 50 * H, time: "2일 전", title: "엄마가 보낸 김장 사진", unread: 0, tags: ["김장"],
+      { by: "hana", at: T0 - 50 * H, time: "2일 전", title: "엄마가 보낸 김장 사진", unread: 0, archivable: true, keptBy: "me", tags: ["김장"],
         photo: "linear-gradient(150deg,#e9b7a2,#c98b72)",
         replies: [{ by: "me", time: "2일 전", text: "주말에 가지러 갈게", reacts: { "👍": 1 } }] },
     ] },
@@ -274,6 +281,8 @@
   // 사진이 없으면 단색 배경
   const bg = t => t.photo || `linear-gradient(${t.color}, ${t.color})`;
   const isDm = () => !!rooms[room].dm;
+  // "내가 / 지우가 / 서진이가"
+  const subj = id => id === "me" ? "내가" : people[id].name + ((people[id].name.at(-1).charCodeAt(0) - 0xAC00) % 28 ? "이가" : "가");
   const fresh = t => Date.now() - t.at < 24 * H;
   const hoursLeft = t => Math.max(1, Math.ceil(24 - (Date.now() - t.at) / H));
 
@@ -305,7 +314,7 @@
     // 1:1 방은 사라지지 않고 계속 쌓임
     const keep = isDm();
     const today = keep ? threads : threads.filter(fresh);
-    const past = keep ? [] : threads.filter(t => !fresh(t));
+    const past = keep ? [] : threads.filter(t => !fresh(t) && t.keptBy);
     document.getElementById("allCount").textContent = past.length;
     document.getElementById("pastSec").hidden = keep;
     document.getElementById("all").hidden = keep;
@@ -323,18 +332,20 @@
         <h3>${esc(t.title)}</h3>
         <div class="last">${lastLine(t)}</div>
         <div class="foot">${keep ? "<span></span>" : stack(t)}
+          ${t.keptBy && !keep ? `<span class="unread">📌</span>` : ""}
           ${t.unread ? `<span class="unread"><i></i>새 답장 ${t.unread}</span>` : ""}<span class="plus">＋</span></div>`;
       b.onclick = () => openThread(threads.indexOf(t));
       rail.appendChild(b);
     });
 
     const list = document.getElementById("all");
-    list.innerHTML = past.length ? "" : `<div class="empty">24시간이 지난 이야기는 여기에 쌓여요</div>`;
+    list.innerHTML = past.length ? "" : `<div class="empty">누군가 보관한 이야기만 24시간 뒤에도 여기 남아요</div>`;
     past.forEach(t => {
       const b = document.createElement("button");
       b.className = "row";
       b.innerHTML = `<span class="thumb" style="background-image:${bg(t)}"></span>
-        <div class="mid"><h4>${esc(t.title)}</h4><div class="last">${lastLine(t)}</div></div>
+        <div class="mid"><h4>${esc(t.title)}</h4><div class="last">${lastLine(t)}</div>
+          <span class="pin">📌 ${subj(t.keptBy)} 보관함</span></div>
         <span class="time">${t.time}</span>`;
       b.onclick = () => openThread(threads.indexOf(t));
       list.appendChild(b);
@@ -352,10 +363,20 @@
       <h1>${esc(t.title)}</h1>
       ${t.ref ? `<div class="ref"><span class="thumb" style="background-image:${t.ref.bg}"></span>
         <div><span class="sub">${esc(t.ref.room)}에서</span><b>${esc(t.ref.title)}</b></div></div>` : ""}
+      ${isDm() ? "" : t.archivable
+        ? `<button class="keep-btn${t.keptBy ? " on" : ""}" id="keepBtn">📌 ${t.keptBy ? `${subj(t.keptBy)} 보관함` : "보관하기"}</button>`
+        : `<span class="keep-note">올린 사람이 보관을 꺼 뒀어요 · 24시간 뒤 사라져요</span>`}
       ${!isDm() && t.by !== "me" ? `<button class="dm-btn" id="dmBtn">🔒 ${people[t.by].name}에게 따로 답장</button>` : ""}
       <div class="chips">${t.tags.map((g, k) => `<span class="chip${k ? "" : " on"}">#${esc(g)}</span>`).join("")}</div>`;
     const dmBtn = document.getElementById("dmBtn");
     if (dmBtn) dmBtn.onclick = () => replyPrivately(t);
+    const keepBtn = document.getElementById("keepBtn");
+    // 공유 보관: 누가 보관하든 방 전체에 남음. 보관한 사람만 해제 가능
+    if (keepBtn) keepBtn.onclick = () => {
+      if (!t.keptBy) t.keptBy = "me";
+      else if (t.keptBy === "me") t.keptBy = null;
+      renderThread();
+    };
     const list = document.getElementById("replies");
     list.innerHTML = "";
     t.replies.forEach(r => {
@@ -438,7 +459,8 @@
     const title = draft.value.trim();
     if (!title && !pickedUrl) { draft.focus(); return; }
     threads.unshift({ by: "me", at: Date.now(), time: now(), title: title || "새 사진", unread: 0, tags: ["새 스레드"],
-      photo: pickedUrl ? `url(${pickedUrl})` : null, color: pickColor(), replies: [] });
+      photo: pickedUrl ? `url(${pickedUrl})` : null, color: pickColor(), replies: [],
+      archivable: document.getElementById("allowKeep").checked });
     draft.value = ""; pickedUrl = null; picked.hidden = true;
     toggleSheet(false);
     renderHome();
