@@ -22,9 +22,7 @@
     color: var(--ink);
     font-family: "Gowun Dodum", system-ui, sans-serif;
     display: flex; justify-content: center;
-    transition: background .8s ease;
   }
-  body.warm { background: #f7e9d6; }
 
   .app {
     width: 100%; max-width: 560px; height: 100%;
@@ -66,7 +64,6 @@
   .line.cont .dot { visibility: hidden; }
   .me .dot { background: var(--teal); }
   .you .dot { background: var(--sand); }
-  .line.pat .text { color: var(--teal); font-size: 14px; }
 
   /* 카드형: 한 장씩 */
   .cards {
@@ -92,12 +89,6 @@
 
   /* 입력 */
   footer { padding: 10px 16px 18px; display: flex; gap: 10px; align-items: flex-end; }
-  .pat {
-    width: 48px; height: 48px; flex: none; border-radius: 50%; border: 0;
-    background: var(--sand); color: #fff; font-size: 22px; cursor: pointer;
-    transition: transform .15s ease;
-  }
-  .pat:active { transform: scale(.88); }
   .input {
     flex: 1; display: flex; align-items: flex-end; background: #fff;
     border-radius: 24px; padding: 6px 6px 6px 18px; border: 1px solid #d6c7b088;
@@ -112,14 +103,6 @@
     padding: 9px 16px; border-radius: 18px; cursor: pointer;
   }
 
-  /* 토닥 효과 */
-  .ripple {
-    position: fixed; border-radius: 50%; pointer-events: none;
-    background: radial-gradient(circle, #87cbb966, #bfefe000 70%);
-    width: 40px; height: 40px; transform: translate(-50%, -50%);
-    animation: ripple 1.2s ease-out forwards;
-  }
-  @keyframes ripple { to { width: 900px; height: 900px; opacity: 0; } }
   @keyframes rise { from { opacity: 0; transform: translateY(6px); } }
 </style>
 </head>
@@ -148,7 +131,6 @@
   </section>
 
   <footer>
-    <button class="pat" id="pat" title="토닥토닥">🤲</button>
     <div class="input">
       <textarea id="msg" rows="1" placeholder="천천히 이야기해요"></textarea>
       <button class="send" id="send">보내기</button>
@@ -163,7 +145,6 @@
     { from: "me", text: "좀 길었어. 회의가 계속 이어져서" },
     { from: "me", text: "그래도 퇴근길 하늘이 예뻤어" },
     { from: "you", text: "그런 날엔 하늘이 위로가 되더라" },
-    { from: "you", type: "pat", text: "민트가 토닥토닥 해줬어요" },
   ];
   const replies = ["응, 듣고 있어", "그랬구나", "천천히 말해도 돼", "고마워, 말해줘서"];
 
@@ -176,12 +157,12 @@
     flow.innerHTML = '<div class="day">오늘</div>';
     messages.forEach((m, i) => {
       const prev = messages[i - 1];
-      const cont = prev && prev.from === m.from && !m.type && !prev.type;
+      const cont = prev && prev.from === m.from;
       const el = document.createElement("div");
-      el.className = `line ${m.from}${cont ? " cont" : ""}${m.type === "pat" ? " pat" : ""}`;
+      el.className = `line ${m.from}${cont ? " cont" : ""}`;
       el.innerHTML = `<span class="dot"></span><div><div class="who"></div><div class="text"></div></div>`;
       el.querySelector(".who").textContent = names[m.from];
-      el.querySelector(".text").textContent = m.type === "pat" ? "· " + m.text + " ·" : m.text;
+      el.querySelector(".text").textContent = m.text;
       flow.appendChild(el);
     });
     flow.scrollTop = flow.scrollHeight;
@@ -217,22 +198,7 @@
     }, 1200);
   }
 
-  function pat(e) {
-    const r = document.createElement("div");
-    r.className = "ripple";
-    const b = e.currentTarget.getBoundingClientRect();
-    r.style.left = b.left + b.width / 2 + "px";
-    r.style.top = b.top + b.height / 2 + "px";
-    document.body.appendChild(r);
-    setTimeout(() => r.remove(), 1300);
-    document.body.classList.add("warm");
-    setTimeout(() => document.body.classList.remove("warm"), 1500);
-    if (navigator.vibrate) navigator.vibrate([30, 60, 30]);
-    add({ from: "me", type: "pat", text: "민트를 토닥토닥 해줬어요" });
-  }
-
   document.getElementById("send").onclick = send;
-  document.getElementById("pat").onclick = pat;
   msg.addEventListener("keydown", e => {
     if (e.key === "Enter" && !e.shiftKey && !e.isComposing) { e.preventDefault(); send(); }
   });
