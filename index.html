@@ -18,205 +18,218 @@
   * { box-sizing: border-box; margin: 0; padding: 0; }
   html, body { height: 100%; }
   body {
-    background: var(--cream);
-    color: var(--ink);
+    background: var(--cream); color: var(--ink);
     font-family: "Gowun Dodum", system-ui, sans-serif;
-    display: flex; justify-content: center;
+    display: flex; justify-content: center; overflow: hidden;
+  }
+  button { font: inherit; cursor: pointer; }
+  .app { position: relative; width: 100%; max-width: 560px; height: 100%; overflow: hidden; }
+  .view { position: absolute; inset: 0; display: flex; flex-direction: column; transition: transform .3s ease; }
+  .thread { background: var(--cream); transform: translateX(100%); }
+  .app.open .thread { transform: none; }
+  .app.open .feed { transform: translateX(-30%); }
+
+  header { display: flex; align-items: center; gap: 12px; padding: 18px 20px 12px; }
+  header h1 { font-size: 22px; font-weight: 400; flex: 1; }
+  header p { font-size: 13px; color: var(--slate); }
+  .back { border: 0; background: none; font-size: 22px; color: var(--slate); }
+  .upload {
+    border: 0; background: var(--teal); color: #fff; font-size: 14px;
+    padding: 8px 14px; border-radius: 999px;
   }
 
-  .app {
-    width: 100%; max-width: 560px; height: 100%;
-    display: flex; flex-direction: column;
+  /* 피드: 사진 = 대화 주제 */
+  .posts { flex: 1; overflow-y: auto; padding: 4px 16px 32px; display: flex; flex-direction: column; gap: 22px; }
+  .post { background: none; border: 0; text-align: left; color: inherit; display: flex; flex-direction: column; gap: 10px; }
+  .photo {
+    width: 100%; aspect-ratio: 4 / 5; border-radius: 20px; background-size: cover; background-position: center;
+    position: relative; overflow: hidden;
   }
+  .photo .cap {
+    position: absolute; left: 0; right: 0; bottom: 0; padding: 40px 18px 16px;
+    background: linear-gradient(#0000, #0006); color: #fff; font-size: 17px;
+  }
+  .meta { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--slate); padding: 0 4px; }
+  .avatars { display: flex; }
+  .av {
+    width: 22px; height: 22px; border-radius: 50%; border: 2px solid var(--cream);
+    display: grid; place-items: center; font-size: 11px; color: #fff; margin-left: -6px;
+  }
+  .av:first-child { margin-left: 0; }
+  .peek { font-size: 14px; color: var(--ink); padding: 0 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .peek b { font-weight: 400; color: var(--slate); margin-right: 6px; }
 
-  /* 상단 */
-  header {
-    display: flex; align-items: center; justify-content: space-between;
-    padding: 18px 20px 12px;
+  /* 스레드 */
+  .t-body { flex: 1; overflow-y: auto; padding: 0 16px 16px; }
+  .t-photo { aspect-ratio: 4 / 3; }
+  .replies { display: flex; flex-direction: column; gap: 16px; margin-top: 18px; }
+  .reply { display: grid; grid-template-columns: 32px 1fr; gap: 10px; animation: rise .3s ease both; }
+  .reply .av { width: 32px; height: 32px; font-size: 13px; border: 0; margin: 0; }
+  .reply .who { font-size: 13px; color: var(--slate); }
+  .reply .who span { margin-left: 6px; font-size: 12px; opacity: .7; }
+  .reply .text { font-size: 16px; line-height: 1.55; white-space: pre-wrap; word-break: break-word; }
+  .reacts { display: flex; gap: 6px; margin-top: 6px; }
+  .react {
+    border: 1px solid var(--sand); background: #fff8; border-radius: 999px;
+    font-size: 12px; padding: 2px 8px; color: var(--slate);
   }
-  .room h1 { font-size: 20px; font-weight: 400; letter-spacing: -0.02em; }
-  .room p { font-size: 13px; color: var(--slate); margin-top: 2px; }
-  .modes { display: flex; background: #fff8; border-radius: 999px; padding: 3px; }
-  .modes button {
-    border: 0; background: none; font: inherit; font-size: 13px; color: var(--slate);
-    padding: 6px 12px; border-radius: 999px; cursor: pointer;
-  }
-  .modes button.on { background: var(--teal); color: #fff; }
+  .react.on { background: var(--mint); border-color: var(--teal); color: var(--ink); }
 
-  /* 흐름형: 모두 왼쪽 정렬, 말풍선 없음 */
-  .flow {
-    flex: 1; overflow-y: auto; padding: 8px 20px 24px;
-    display: flex; flex-direction: column; gap: 4px;
-  }
-  .day {
-    align-self: center; font-size: 12px; color: var(--slate);
-    margin: 14px 0 8px; opacity: .8;
-  }
-  .line {
-    display: grid; grid-template-columns: 10px 1fr; gap: 12px;
-    padding: 6px 0; animation: rise .35s ease both;
-  }
-  .line .dot { width: 10px; height: 10px; border-radius: 50%; margin-top: 7px; }
-  .line .who { font-size: 12px; color: var(--slate); margin-bottom: 2px; }
-  .line .text { font-size: 16px; line-height: 1.6; white-space: pre-wrap; word-break: break-word; }
-  .line.cont { padding-top: 0; }
-  .line.cont .who { display: none; }
-  .line.cont .dot { visibility: hidden; }
-  .me .dot { background: var(--teal); }
-  .you .dot { background: var(--sand); }
-
-  /* 카드형: 한 장씩 */
-  .cards {
-    flex: 1; display: none; flex-direction: column; align-items: center; justify-content: center;
-    padding: 20px; gap: 18px;
-  }
-  .card {
-    width: 100%; min-height: 260px; border-radius: 24px; padding: 28px;
-    display: flex; flex-direction: column; justify-content: space-between;
-    box-shadow: 0 10px 30px #6b728022; animation: rise .35s ease both;
-  }
-  .card.me { background: var(--mint); }
-  .card.you { background: #fff; border: 1px solid var(--sand); }
-  .card .text { font-size: 22px; line-height: 1.6; }
-  .card .who { font-size: 13px; color: var(--slate); }
-  .nav { display: flex; align-items: center; gap: 16px; color: var(--slate); font-size: 13px; }
-  .nav button {
-    width: 40px; height: 40px; border-radius: 50%; border: 1px solid var(--sand);
-    background: #fff; font-size: 16px; color: var(--slate); cursor: pointer;
-  }
-  .app.card-mode .flow { display: none; }
-  .app.card-mode .cards { display: flex; }
-
-  /* 입력 */
-  footer { padding: 10px 16px 18px; display: flex; gap: 10px; align-items: flex-end; }
+  footer { padding: 10px 16px 18px; }
   .input {
-    flex: 1; display: flex; align-items: flex-end; background: #fff;
+    display: flex; align-items: flex-end; background: #fff;
     border-radius: 24px; padding: 6px 6px 6px 18px; border: 1px solid #d6c7b088;
   }
   textarea {
     flex: 1; border: 0; outline: 0; resize: none; background: none;
-    font: inherit; font-size: 16px; color: var(--ink); line-height: 1.5;
-    padding: 6px 0; max-height: 120px;
+    font: inherit; font-size: 16px; color: var(--ink); line-height: 1.5; padding: 6px 0; max-height: 120px;
   }
-  .send {
-    border: 0; background: var(--teal); color: #fff; font: inherit; font-size: 14px;
-    padding: 9px 16px; border-radius: 18px; cursor: pointer;
-  }
-
+  .send { border: 0; background: var(--teal); color: #fff; font-size: 14px; padding: 9px 16px; border-radius: 18px; }
   @keyframes rise { from { opacity: 0; transform: translateY(6px); } }
 </style>
 </head>
 <body>
 <div class="app" id="app">
-  <header>
-    <div class="room">
-      <h1>민트</h1>
-      <p id="status">함께 있어요</p>
-    </div>
-    <div class="modes">
-      <button class="on" data-mode="flow">흐름</button>
-      <button data-mode="card">카드</button>
-    </div>
-  </header>
-
-  <main class="flow" id="flow"></main>
-
-  <section class="cards" id="cards">
-    <div id="cardSlot" style="width:100%"></div>
-    <div class="nav">
-      <button id="prev" aria-label="이전">←</button>
-      <span id="count"></span>
-      <button id="next" aria-label="다음">→</button>
-    </div>
+  <section class="view feed">
+    <header>
+      <div style="flex:1"><h1>우리 넷</h1><p>사진 하나에 이야기 하나</p></div>
+      <button class="upload" id="upload">사진 올리기</button>
+      <input type="file" id="file" accept="image/*" hidden>
+    </header>
+    <main class="posts" id="posts"></main>
   </section>
 
-  <footer>
-    <div class="input">
-      <textarea id="msg" rows="1" placeholder="천천히 이야기해요"></textarea>
-      <button class="send" id="send">보내기</button>
-    </div>
-  </footer>
+  <section class="view thread">
+    <header>
+      <button class="back" id="back" aria-label="뒤로">←</button>
+      <div style="flex:1"><h1 id="tTitle"></h1><p id="tSub"></p></div>
+    </header>
+    <div class="t-body" id="tBody"></div>
+    <footer>
+      <div class="input">
+        <textarea id="msg" rows="1" placeholder="이 사진에 한마디"></textarea>
+        <button class="send" id="send">보내기</button>
+      </div>
+    </footer>
+  </section>
 </div>
 
 <script>
-  const names = { me: "나", you: "민트" };
-  const messages = [
-    { from: "you", text: "오늘 하루 어땠어?" },
-    { from: "me", text: "좀 길었어. 회의가 계속 이어져서" },
-    { from: "me", text: "그래도 퇴근길 하늘이 예뻤어" },
-    { from: "you", text: "그런 날엔 하늘이 위로가 되더라" },
+  const people = {
+    me:   { name: "나",   color: "#87CBB9" },
+    jiwoo:{ name: "지우", color: "#D6C7B0" },
+    hana: { name: "하나", color: "#6B7280" },
+    seo:  { name: "서진", color: "#a9d9c9" },
+  };
+  // 샘플 사진 대신 그라데이션
+  const posts = [
+    { by: "jiwoo", time: "방금", caption: "퇴근길 하늘 미쳤다",
+      bg: "linear-gradient(160deg,#f6c9a8,#e9a3a0 45%,#6B7280)",
+      replies: [
+        { by: "hana", time: "방금", text: "어디야 이거?? 색감 뭐임", reacts: { "😮": 2 } },
+        { by: "jiwoo", time: "방금", text: "합정역 앞 육교", reacts: {} },
+      ] },
+    { by: "seo", time: "2시간 전", caption: "오늘의 점심 평가 부탁",
+      bg: "linear-gradient(200deg,#F3EDE2,#D6C7B0 50%,#a88f6a)",
+      replies: [
+        { by: "me", time: "1시간 전", text: "7점. 김치가 부족해 보임", reacts: { "😂": 3 } },
+        { by: "hana", time: "1시간 전", text: "나는 9점 줌", reacts: {} },
+        { by: "seo", time: "58분 전", text: "김치 리필 무한이었음 다들 오해", reacts: { "😂": 1 } },
+      ] },
+    { by: "hana", time: "어제", caption: "주말에 여기 갈 사람",
+      bg: "linear-gradient(170deg,#BFEFE0,#87CBB9 55%,#4d8d7d)",
+      replies: [
+        { by: "jiwoo", time: "어제", text: "나 토요일 가능", reacts: { "👍": 2 } },
+      ] },
   ];
-  const replies = ["응, 듣고 있어", "그랬구나", "천천히 말해도 돼", "고마워, 말해줘서"];
 
   const app = document.getElementById("app");
-  const flow = document.getElementById("flow");
   const msg = document.getElementById("msg");
-  let mode = "flow", cardIdx = messages.length - 1;
+  let current = null;
 
-  function renderFlow() {
-    flow.innerHTML = '<div class="day">오늘</div>';
-    messages.forEach((m, i) => {
-      const prev = messages[i - 1];
-      const cont = prev && prev.from === m.from;
-      const el = document.createElement("div");
-      el.className = `line ${m.from}${cont ? " cont" : ""}`;
-      el.innerHTML = `<span class="dot"></span><div><div class="who"></div><div class="text"></div></div>`;
-      el.querySelector(".who").textContent = names[m.from];
-      el.querySelector(".text").textContent = m.text;
-      flow.appendChild(el);
+  function av(id) {
+    const p = people[id];
+    return `<span class="av" style="background:${p.color}">${p.name[0]}</span>`;
+  }
+  const esc = s => s.replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+
+  function renderFeed() {
+    const el = document.getElementById("posts");
+    el.innerHTML = "";
+    posts.forEach((p, i) => {
+      const last = p.replies[p.replies.length - 1];
+      const who = [...new Set(p.replies.map(r => r.by))].slice(0, 3);
+      const b = document.createElement("button");
+      b.className = "post";
+      b.innerHTML = `
+        <div class="photo" style="background-image:${p.bg}"><div class="cap">${esc(p.caption)}</div></div>
+        <div class="meta"><span class="avatars">${who.map(av).join("")}</span>
+          ${people[p.by].name} · ${p.time} · 댓글 ${p.replies.length}</div>
+        ${last ? `<div class="peek"><b>${people[last.by].name}</b>${esc(last.text)}</div>` : ""}`;
+      b.onclick = () => openThread(i);
+      el.appendChild(b);
     });
-    flow.scrollTop = flow.scrollHeight;
   }
 
-  function renderCard() {
-    const m = messages[cardIdx];
-    const slot = document.getElementById("cardSlot");
-    slot.innerHTML = `<div class="card ${m.from}"><div class="text"></div><div class="who"></div></div>`;
-    slot.querySelector(".text").textContent = m.text;
-    slot.querySelector(".who").textContent = "— " + names[m.from];
-    document.getElementById("count").textContent = `${cardIdx + 1} / ${messages.length}`;
+  function renderThread() {
+    const p = posts[current];
+    document.getElementById("tTitle").textContent = p.caption;
+    document.getElementById("tSub").textContent = `${people[p.by].name} · ${p.time}`;
+    const body = document.getElementById("tBody");
+    body.innerHTML = `<div class="photo t-photo" style="background-image:${p.bg}"></div><div class="replies"></div>`;
+    const list = body.querySelector(".replies");
+    p.replies.forEach(r => {
+      const d = document.createElement("div");
+      d.className = "reply";
+      const reacts = Object.entries(r.reacts).map(([e, n]) =>
+        `<button class="react${r.mine === e ? " on" : ""}" data-e="${e}">${e} ${n}</button>`).join("");
+      d.innerHTML = `${av(r.by)}<div>
+        <div class="who">${people[r.by].name}<span>${r.time}</span></div>
+        <div class="text">${esc(r.text)}</div>
+        <div class="reacts">${reacts}<button class="react add" data-e="❤️">+</button></div></div>`;
+      d.querySelectorAll(".react").forEach(btn => btn.onclick = () => toggleReact(r, btn.dataset.e));
+      list.appendChild(d);
+    });
+    body.scrollTop = body.scrollHeight;
   }
 
-  function render() { mode === "flow" ? renderFlow() : renderCard(); }
-
-  function add(m) {
-    messages.push(m);
-    cardIdx = messages.length - 1;
-    render();
+  function toggleReact(r, e) {
+    if (r.mine) { r.reacts[r.mine]--; if (!r.reacts[r.mine]) delete r.reacts[r.mine]; }
+    if (r.mine === e) { r.mine = null; }
+    else { r.reacts[e] = (r.reacts[e] || 0) + 1; r.mine = e; }
+    renderThread();
   }
+
+  function openThread(i) { current = i; renderThread(); app.classList.add("open"); }
+  document.getElementById("back").onclick = () => { app.classList.remove("open"); renderFeed(); };
 
   function send() {
     const text = msg.value.trim();
-    if (!text) return;
-    add({ from: "me", text });
+    if (!text || current === null) return;
+    posts[current].replies.push({ by: "me", time: "방금", text, reacts: {} });
     msg.value = ""; msg.style.height = "auto";
-    const status = document.getElementById("status");
-    status.textContent = "민트가 생각하는 중…";
-    setTimeout(() => {
-      status.textContent = "함께 있어요";
-      add({ from: "you", text: replies[Math.floor(Math.random() * replies.length)] });
-    }, 1200);
+    renderThread();
   }
-
   document.getElementById("send").onclick = send;
   msg.addEventListener("keydown", e => {
     if (e.key === "Enter" && !e.shiftKey && !e.isComposing) { e.preventDefault(); send(); }
   });
-  msg.addEventListener("input", () => {
-    msg.style.height = "auto";
-    msg.style.height = msg.scrollHeight + "px";
-  });
-  document.querySelectorAll(".modes button").forEach(b => b.onclick = () => {
-    document.querySelectorAll(".modes button").forEach(x => x.classList.toggle("on", x === b));
-    mode = b.dataset.mode;
-    app.classList.toggle("card-mode", mode === "card");
-    cardIdx = messages.length - 1;
-    render();
-  });
-  document.getElementById("prev").onclick = () => { if (cardIdx > 0) { cardIdx--; renderCard(); } };
-  document.getElementById("next").onclick = () => { if (cardIdx < messages.length - 1) { cardIdx++; renderCard(); } };
+  msg.addEventListener("input", () => { msg.style.height = "auto"; msg.style.height = msg.scrollHeight + "px"; });
 
-  render();
+  // 사진 올리기: 새 스레드 생성
+  const file = document.getElementById("file");
+  document.getElementById("upload").onclick = () => file.click();
+  file.onchange = () => {
+    const f = file.files[0];
+    if (!f) return;
+    const url = URL.createObjectURL(f);
+    posts.unshift({ by: "me", time: "방금", caption: "새 사진", bg: `url(${url})`, replies: [] });
+    file.value = "";
+    renderFeed();
+    openThread(0);
+  };
+
+  renderFeed();
 </script>
 </body>
 </html>
