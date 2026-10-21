@@ -44,7 +44,7 @@
 
   /* 상단 */
   .top { display: flex; align-items: center; justify-content: space-between; padding: 16px 20px 8px; }
-  .me { width: 40px; height: 40px; border-radius: 50%; background: var(--teal); color: #fff; display: grid; place-items: center; font-size: 15px; font-weight: 500; }
+  .me-btn { width: 40px; height: 40px; border-radius: 50%; background: var(--teal); color: #fff; display: grid; place-items: center; font-size: 15px; font-weight: 500; }
   .icon-btn { width: 40px; height: 40px; border-radius: 50%; background: var(--surface); border: 1px solid var(--line); color: var(--slate); font-size: 18px; }
   .seg { display: flex; padding: 3px; border-radius: 999px; background: var(--surface); border: 1px solid var(--line); }
   .seg button { font-size: 13px; padding: 6px 16px; border-radius: 999px; color: var(--slate); }
@@ -278,7 +278,7 @@
 <div class="app" id="app">
   <section class="view home">
     <div class="top">
-      <button class="me" id="meBtn" aria-label="내 홈">나</button>
+      <button class="me-btn" id="meBtn" aria-label="내 홈">나</button>
       <div class="seg" id="seg">
         <button class="on" data-v="feed" aria-label="피드"><svg viewBox="0 0 24 24"><path d="M4 5h16v11H9l-5 4z"/></svg></button>
         <button data-v="map" aria-label="지도"><svg viewBox="0 0 24 24"><path d="M3 6l6-2 6 2 6-2v14l-6 2-6-2-6 2z M9 4v14 M15 6v14"/></svg></button>
@@ -322,7 +322,7 @@
           <button class="send" id="nowBtn">남기기</button>
         </div>
         <div class="music-row">
-          <span>🎵 듣는 노래 공유</span><b id="myTrack"></b>
+          <span>듣는 노래 공유</span><b id="myTrack"></b>
           <button class="switch" id="musicSwitch" aria-pressed="false" aria-label="듣는 노래 공유"></button>
         </div>
         <p class="map-note">위치는 올리는 순간에만, 동네 단위로만 보여요. 상태는 24시간 뒤 사라져요. 친구 노래를 누르면 같이 들을 수 있어요.</p>
@@ -381,7 +381,7 @@
         <div class="cy-stats" id="cyStats"></div>
         <div class="cy-box" id="cyRoom">
           <div class="cy-room-hd"><b>Mini Room</b><span id="roomNote">방명록 메모 · 스티커</span>
-            <button class="skin-btn" id="skinBtn">📷 사진으로 옷 입히기</button>
+            <button class="skin-btn" id="skinBtn">사진으로 옷 입히기</button>
             <input type="file" id="skinFile" accept="image/*" capture="environment" hidden></div>
           <div class="board" id="board"></div>
           <div class="tools" id="tools">
@@ -527,7 +527,7 @@
         <div class="kicker">${av(lead.by, "s")}${people[lead.by].name}${lead.place ? ` · ${esc(lead.place)}` : ""} · ${keep || !fresh(lead) ? lead.time : `${hoursLeft(lead)}시간 남음`}</div>
         <h2>${esc(lead.title)}</h2>
         <div class="last">${lastLine(lead)}</div>
-        <div class="hero-btns"><span class="primary">💬 답장하기</span>
+        <div class="hero-btns"><span class="primary">답장하기</span>
           ${lead.unread ? `<span class="ghost2">새 답장 ${lead.unread}</span>` : `<span class="ghost2">답장 ${lead.replies.length}</span>`}</div>`;
       b.onclick = () => openThread(threads.indexOf(lead));
       hero.appendChild(b);
@@ -548,7 +548,7 @@
         b.style.backgroundImage = `linear-gradient(#0000 45%, #000c), ${bg(t)}`;
         const left = !keep && fresh(t) ? Math.max(0, 1 - (Date.now() - t.at) / (24 * H)) : null;
         b.innerHTML = `
-          ${t.unread ? `<span class="badge">새 답장 ${t.unread}</span>` : t.keptBy && !keep ? `<span class="badge pin">📌 보관</span>` : ""}
+          ${t.unread ? `<span class="badge">새 답장 ${t.unread}</span>` : t.keptBy && !keep ? `<span class="badge pin">보관</span>` : ""}
           <h4>${esc(t.title)}</h4>
           <div class="meta">${people[t.by].name} · ${t.time}</div>
           ${left !== null ? `<span class="time-left"><i style="width:${left * 100}%"></i></span>` : ""}`;
@@ -593,7 +593,7 @@
       const song = songOf(id);
       const el = document.createElement(song && id !== "me" ? "button" : "div");
       el.className = "mk" + (id === "me" ? " me" : "") + (listeningTo === id ? " with" : "");
-      el.innerHTML = `${av(id)}<span class="tag"><span>${esc(st.text)}</span>${song ? `<span class="song">🎵 ${esc(song.title)} · ${esc(song.artist)}</span>` : ""}</span>`;
+      el.innerHTML = `${av(id)}<span class="tag"><span>${esc(st.text)}</span>${song ? `<span class="song">${esc(song.title)} · ${esc(song.artist)}</span>` : ""}</span>`;
       if (song && id !== "me") el.onclick = () => openListen(id);
       const busy = threads.some(t => t.place === st.place && fresh(t));
       put(el, st.place, busy ? -48 : 0);
@@ -687,12 +687,12 @@
     document.getElementById("thread").style.backgroundImage = `linear-gradient(#0006, #0000 28%, #0000 40%, #000d 78%), ${bg(t)}`;
     document.getElementById("bars").innerHTML = threads.map((_, k) => `<i class="${k <= current ? "on" : ""}"></i>`).join("");
     const meta = [];
-    if (t.place) meta.push(`<span>📍 ${esc(t.place)}</span>`);
+    if (t.place) meta.push(`<span>${esc(t.place)}</span>`);
     if (t.ref) meta.push(`<span class="ref"><span class="thumb" style="background-image:${t.ref.bg}"></span>${esc(t.ref.room)} · ${esc(t.ref.title)}</span>`);
     if (!isDm()) meta.push(t.archivable
-      ? `<button class="${t.keptBy ? "on" : ""}" id="keepBtn">📌 ${t.keptBy ? `${subj(t.keptBy)} 보관함` : "보관하기"}</button>`
+      ? `<button class="${t.keptBy ? "on" : ""}" id="keepBtn">${t.keptBy ? `${subj(t.keptBy)} 보관함` : "보관하기"}</button>`
       : `<span>보관 꺼짐 · 24시간 뒤 사라져요</span>`);
-    if (!isDm() && t.by !== "me") meta.push(`<button id="dmBtn">🔒 ${people[t.by].name}에게 따로 답장</button>`);
+    if (!isDm() && t.by !== "me") meta.push(`<button id="dmBtn">${people[t.by].name}에게 따로 답장</button>`);
     document.getElementById("tHead").innerHTML = `
       <div class="who-row">${av(t.by)}<b>${people[t.by].name}</b><span class="sub">${t.time} · 답장 ${t.replies.length}</span>
         <span style="margin-left:auto">${isDm() ? "" : stack(t)}</span></div>
