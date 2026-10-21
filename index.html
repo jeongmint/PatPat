@@ -207,7 +207,9 @@
   .reply { display: grid; grid-template-columns: 52px 1fr; color: #fff; text-shadow: 0 1px 4px #000c; animation: rise .3s ease both; }
   .reply.me .who { color: var(--teal); }
   .reply .tm { font-size: 11px; color: #ffffff8c; padding: 12px 0 0 12px; font-variant-numeric: tabular-nums; }
-  .reply .body { padding: 10px 14px 10px 0; min-width: 0; }
+  .reply .body { padding: 10px 14px 4px 0; min-width: 0; }
+  .reply.cont .body { padding-top: 0; }
+  .reply.me p { color: var(--mint); }
   .reply .who { font-size: 12px; color: #ffffffb3; display: flex; align-items: center; gap: 6px; }
   .reply p { font-size: 15px; line-height: 1.5; margin-top: 2px; white-space: pre-wrap; word-break: break-word; }
   .reacts { display: flex; gap: 2px; margin-top: 6px; flex-wrap: wrap; }
@@ -709,16 +711,20 @@
     };
     const list = document.getElementById("replies");
     list.innerHTML = "";
-    t.replies.forEach(r => {
+    t.replies.forEach((r, i) => {
       const d = document.createElement("div");
-      d.className = "reply" + (r.by === "me" ? " me" : "");
+      // 같은 사람이 이어서 보내면 이름·시간을 생략. 내 답장엔 이름을 붙이지 않음
+      const cont = i > 0 && t.replies[i - 1].by === r.by;
+      d.className = "reply" + (r.by === "me" ? " me" : "") + (cont ? " cont" : "");
       const reacts = Object.entries(r.reacts).map(([e, n]) =>
         `<button class="react${r.mine === e ? " on" : ""}" data-e="${e}">${e} ${n}</button>`).join("");
-      d.innerHTML = `<span class="tm">${r.time}</span>
-        <div class="body"><div class="who">${av(r.by, "s")}${people[r.by].name}</div>
+      d.innerHTML = `<span class="tm">${cont ? "" : r.time}</span>
+        <div class="body">${cont || r.by === "me" ? "" : `<div class="who">${av(r.by, "s")}${people[r.by].name}</div>`}
           <p>${esc(r.text)}</p>
-          <div class="reacts">${reacts}<button class="react" data-e="❤️">＋</button></div></div>`;
+          ${reacts ? `<div class="reacts">${reacts}</div>` : ""}</div>`;
       d.querySelectorAll(".react").forEach(btn => btn.onclick = () => toggleReact(r, btn.dataset.e));
+      // 두 번 탭하면 하트
+      d.querySelector("p").ondblclick = () => toggleReact(r, "❤️");
       list.appendChild(d);
     });
     const sc = document.getElementById("tScroll");
