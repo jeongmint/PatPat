@@ -43,23 +43,24 @@
   .scroll { flex: 1; overflow-y: auto; }
 
   /* 상단 */
-  .top { display: flex; align-items: center; justify-content: space-between; padding: 16px 20px 8px; }
-  .me-btn { width: 40px; height: 40px; border-radius: 50%; background: var(--teal); color: #fff; display: grid; place-items: center; font-size: 15px; font-weight: 500; }
-  .icon-btn { width: 40px; height: 40px; border-radius: 50%; background: var(--surface); border: 1px solid var(--line); color: var(--slate); font-size: 18px; }
-  .seg { display: flex; padding: 3px; border-radius: 999px; background: var(--surface); border: 1px solid var(--line); }
-  .seg button { font-size: 13px; padding: 6px 16px; border-radius: 999px; color: var(--slate); }
-  .seg svg { display: block; width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linejoin: round; }
-  .seg button.on { background: var(--deep); color: #fff; }
-  .tabs { display: flex; align-items: center; gap: 4px; padding: 6px 0 10px 20px; }
-  .new { width: 30px; height: 30px; flex: none; border-radius: 50%; background: var(--deep); color: #fff; font-size: 16px; line-height: 1; }
-  .new[aria-expanded="true"] { background: var(--cream); }
-  .rooms { flex: 1; min-width: 0; display: flex; gap: 8px; overflow-x: auto; padding: 4px 20px 4px 4px; }
+  .top { display: flex; align-items: center; justify-content: space-between; padding: calc(env(safe-area-inset-top, 0px) + 10px) 16px 6px; }
+  .me-btn { width: 32px; height: 32px; font-size: 13px !important; border-radius: 50%; background: var(--teal); color: #fff; display: grid; place-items: center; font-size: 15px; font-weight: 500; }
+  .icon-btn { width: 32px; height: 32px; display: grid; place-items: center; color: var(--ink); }
+  .icon-btn svg, .new svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; }
+  .seg { display: flex; gap: 2px; padding: 2px; border-radius: 999px; background: var(--surface); }
+  .seg button { padding: 5px 14px; border-radius: 999px; color: var(--slate); }
+  .seg svg { display: block; width: 17px; height: 17px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linejoin: round; }
+  .seg button.on { background: var(--cream); color: var(--ink); }
+  .tabs { display: flex; align-items: center; gap: 2px; padding: 4px 0 12px 12px; }
+  .new { width: 32px; height: 32px; flex: none; display: grid; place-items: center; color: var(--ink); }
+  .new[aria-expanded="true"] { color: var(--teal); }
+  .rooms { flex: 1; min-width: 0; display: flex; gap: 6px; overflow-x: auto; padding: 0 16px 0 2px; }
   .rooms::-webkit-scrollbar { display: none; }
   .rooms button {
-    flex: none; white-space: nowrap; font-size: 13px; padding: 6px 14px; border-radius: 999px;
-    background: var(--surface); border: 1px solid var(--line); color: var(--slate); display: flex; align-items: center; gap: 6px;
+    flex: none; white-space: nowrap; font-size: 13px; padding: 6px 13px; border-radius: 999px;
+    background: var(--surface); color: var(--slate); display: flex; align-items: center; gap: 6px;
   }
-  .rooms button.on { background: var(--deep); border-color: var(--deep); color: #fff; }
+  .rooms button.on { background: var(--ink); color: var(--paper); font-weight: 700; }
 
   .av {
     width: 28px; height: 28px; border-radius: 50%; display: inline-grid; place-items: center;
@@ -89,14 +90,15 @@
   /* 홈: 큰 대표 스토리 + 주제별 가로 줄 */
   .hero {
     position: relative; display: flex; flex-direction: column; justify-content: flex-end; gap: 8px;
-    width: 100%; aspect-ratio: 1 / 1; max-height: 480px; padding: 20px; text-align: left; color: #fff;
+    width: calc(100% - 32px); margin: 0 16px; aspect-ratio: 16 / 10; max-height: 260px; padding: 16px; text-align: left; color: #fff;
     background-size: cover; background-position: center;
   }
   .hero .kicker { font-size: 12px; color: #ffffffcc; display: flex; align-items: center; gap: 6px; }
-  .hero h2 { font-size: 30px; font-weight: 700; line-height: 1.2; letter-spacing: -0.03em; text-wrap: balance; }
-  .hero .last { font-size: 14px; color: #ffffffd9; }
-  .hero-btns { display: flex; gap: 8px; margin-top: 6px; }
-  .reply-ic { position: relative; width: 48px; height: 48px; border-radius: 50%; background: #fff; color: #111; display: grid; place-items: center; }
+  .hero h2 { font-size: 22px; font-weight: 700; line-height: 1.2; letter-spacing: -0.03em; text-wrap: balance; }
+  .hero .last { font-size: 13px; color: #ffffffd9; }
+  .hero-btns { height: 0; }
+  .hero h2, .hero .last { padding-right: 52px; }
+  .reply-ic { position: absolute; right: 16px; bottom: 16px; width: 40px; height: 40px; border-radius: 50%; background: #fff; color: #111; display: grid; place-items: center; }
   .reply-ic svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linejoin: round; }
   .dot {
     position: absolute; top: -4px; right: -4px; min-width: 20px; height: 20px; padding: 0 5px; border-radius: 999px;
@@ -289,10 +291,10 @@
         <button class="on" data-v="feed" aria-label="피드"><svg viewBox="0 0 24 24"><path d="M4 5h16v11H9l-5 4z"/></svg></button>
         <button data-v="map" aria-label="지도"><svg viewBox="0 0 24 24"><path d="M3 6l6-2 6 2 6-2v14l-6 2-6-2-6 2z M9 4v14 M15 6v14"/></svg></button>
       </div>
-      <button class="icon-btn" aria-label="검색">⌕</button>
+      <button class="icon-btn" aria-label="검색"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4 4"/></svg></button>
     </div>
     <div class="tabs">
-      <button class="new" id="upload" aria-label="새 스레드 시작" aria-expanded="false">＋</button>
+      <button class="new" id="upload" aria-label="새 스레드 시작" aria-expanded="false"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></button>
       <div class="rooms" id="rooms"></div>
       <input type="file" id="file" accept="image/*" hidden>
     </div>
@@ -542,7 +544,7 @@
     } else {
       const b = document.createElement("button");
       b.className = "hero";
-      b.style.backgroundImage = `linear-gradient(#0000 35%, var(--paper)), linear-gradient(#0007, #0000 25%), ${bg(lead)}`;
+      b.style.backgroundImage = `linear-gradient(#0000 30%, #000c), ${bg(lead)}`;
       b.innerHTML = `
         <div class="kicker">${av(lead.by, "s")}${people[lead.by].name}${lead.place ? ` · ${esc(lead.place)}` : ""}${lead.showDist ? ` · ${distLabel(lead.place)}` : ""} · ${keep || !fresh(lead) ? lead.time : `${hoursLeft(lead)}시간 남음`}</div>
         <h2>${esc(lead.title)}</h2>
