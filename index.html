@@ -204,16 +204,19 @@
   .ref { display: flex; align-items: center; gap: 8px; }
   .ref .thumb { width: 24px; height: 24px; }
   .replies { display: flex; flex-direction: column; gap: 2px; margin-top: auto; }
-  .reply { display: grid; grid-template-columns: 52px 1fr; background: #17191ce0; color: var(--ink); backdrop-filter: blur(12px); animation: rise .3s ease both; }
-  .reply.me { background: #2d5a50e6; }
-  .reply .tm { font-size: 11px; color: var(--slate); padding: 12px 0 0 12px; font-variant-numeric: tabular-nums; }
+  .reply { display: grid; grid-template-columns: 52px 1fr; color: #fff; text-shadow: 0 1px 4px #000c; animation: rise .3s ease both; }
+  .reply.me .who { color: var(--teal); }
+  .reply .tm { font-size: 11px; color: #ffffff8c; padding: 12px 0 0 12px; font-variant-numeric: tabular-nums; }
   .reply .body { padding: 10px 14px 10px 0; min-width: 0; }
-  .reply .who { font-size: 12px; color: var(--slate); display: flex; align-items: center; gap: 6px; }
+  .reply .who { font-size: 12px; color: #ffffffb3; display: flex; align-items: center; gap: 6px; }
   .reply p { font-size: 15px; line-height: 1.5; margin-top: 2px; white-space: pre-wrap; word-break: break-word; }
   .reacts { display: flex; gap: 2px; margin-top: 6px; flex-wrap: wrap; }
-  .react { font-size: 12px; padding: 2px 8px; background: #6b72801a; color: var(--slate); }
-  .react.on { background: var(--deep); color: #fff; }
-  .thread footer { display: flex; background: #17191ceb; backdrop-filter: blur(12px); min-height: 52px; border-top: 1px solid #ffffff55; }
+  .react { font-size: 12px; padding: 2px 6px 2px 0; color: #ffffffb3; }
+  .react.on { color: var(--teal); }
+  .thread footer { display: flex; align-items: center; gap: 8px; min-height: 52px; padding: 0 12px 10px; }
+  .thread footer textarea { color: #fff; border-bottom: 1px solid #ffffff59; }
+  .thread footer textarea::placeholder { color: #ffffff8c; }
+  .thread footer .send { height: 36px; border-radius: 999px; background: #fff; color: #111; }
   .thread footer textarea { flex: 1; padding: 14px 16px; max-height: 120px; }
 
   /* 내 홈 */
@@ -681,7 +684,7 @@
 
   function renderThread() {
     const t = threads[current];
-    document.getElementById("thread").style.backgroundImage = `linear-gradient(#0005, #0000 30%, #0000 50%, #0006), ${bg(t)}`;
+    document.getElementById("thread").style.backgroundImage = `linear-gradient(#0006, #0000 28%, #0000 40%, #000d 78%), ${bg(t)}`;
     document.getElementById("bars").innerHTML = threads.map((_, k) => `<i class="${k <= current ? "on" : ""}"></i>`).join("");
     const meta = [];
     if (t.place) meta.push(`<span>📍 ${esc(t.place)}</span>`);
