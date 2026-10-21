@@ -300,6 +300,7 @@
           <span class="picked" id="picked" hidden></span>
           <select id="place" aria-label="위치"><option value="">위치 없음</option></select>
           <label><input type="checkbox" id="allowKeep" checked> 보관 허용</label>
+          <label id="distWrap" hidden><input type="checkbox" id="showDist"> 거리 공개</label>
           <button class="send" id="post">올리기</button>
         </div>
       </div>
@@ -415,7 +416,7 @@
   const H = 3600e3, T0 = Date.now();
   const rooms = [
     { name: "우리 넷", members: ["jiwoo", "hana", "seo"], threads: [
-      { by: "jiwoo", at: T0 - 0.4 * H, time: "12:40", title: "퇴근길 하늘 미쳤다", place: "합정", unread: 2, archivable: true,
+      { by: "jiwoo", at: T0 - 0.4 * H, time: "12:40", title: "퇴근길 하늘 미쳤다", place: "합정", showDist: true, unread: 2, archivable: true,
         photo: "url(assets/sky.webp)",
         replies: [
           { by: "hana", time: "12:42", text: "어디야 이거?? 색감 뭐임", reacts: { "😮": 2 } },
@@ -424,7 +425,7 @@
       { by: "hana", at: T0 - 2 * H, time: "11:05", title: "토요일에 여기 갈 사람", place: "성수", unread: 1, archivable: true,
         photo: "url(assets/gmf.webp)",
         replies: [{ by: "jiwoo", time: "11:20", text: "나 토요일 가능", reacts: { "👍": 2 } }] },
-      { by: "seo", at: T0 - 5 * H, time: "09:30", title: "오늘의 점심 평가 부탁", place: "여의도", unread: 0, archivable: true,
+      { by: "seo", at: T0 - 5 * H, time: "09:30", title: "오늘의 점심 평가 부탁", place: "여의도", showDist: true, unread: 0, archivable: true,
         photo: "url(assets/lunch.webp)",
         replies: [
           { by: "me", time: "09:41", text: "7점. 김치가 부족해 보임", reacts: { "😂": 3 } },
@@ -539,7 +540,7 @@
       b.className = "hero";
       b.style.backgroundImage = `linear-gradient(#0000 35%, var(--paper)), linear-gradient(#0007, #0000 25%), ${bg(lead)}`;
       b.innerHTML = `
-        <div class="kicker">${av(lead.by, "s")}${people[lead.by].name}${lead.place ? ` · ${esc(lead.place)} · ${distLabel(lead.place)}` : ""} · ${keep || !fresh(lead) ? lead.time : `${hoursLeft(lead)}시간 남음`}</div>
+        <div class="kicker">${av(lead.by, "s")}${people[lead.by].name}${lead.place ? ` · ${esc(lead.place)}` : ""}${lead.showDist ? ` · ${distLabel(lead.place)}` : ""} · ${keep || !fresh(lead) ? lead.time : `${hoursLeft(lead)}시간 남음`}</div>
         <h2>${esc(lead.title)}</h2>
         <div class="last">${lastLine(lead)}</div>
         <div class="hero-btns"><span class="primary">답장하기</span>
@@ -565,7 +566,7 @@
         b.innerHTML = `
           ${t.unread ? `<span class="badge">새 답장 ${t.unread}</span>` : t.keptBy && !keep ? `<span class="badge pin">보관</span>` : ""}
           <h4>${esc(t.title)}</h4>
-          <div class="meta">${people[t.by].name} · ${t.place ? distLabel(t.place) : t.time}</div>
+          <div class="meta">${people[t.by].name} · ${t.showDist ? distLabel(t.place) : t.time}</div>
           ${left !== null ? `<span class="time-left"><i style="width:${left * 100}%"></i></span>` : ""}`;
         b.onclick = () => openThread(threads.indexOf(t));
         sec.querySelector(".row-list").appendChild(b);
@@ -684,6 +685,9 @@
     renderHome();
   });
 
+  // 위치를 골랐을 때만 거리 공개 여부를 물음 (기본은 비공개)
+  document.getElementById("place").onchange = e => { document.getElementById("distWrap").hidden = !e.target.value; };
+
   // 위치 선택지 채우기
   Object.keys(places).forEach(n => {
     document.getElementById("place").add(new Option(n, n));
@@ -702,7 +706,7 @@
     document.getElementById("thread").style.backgroundImage = `linear-gradient(#0006, #0000 28%, #0000 40%, #000d 78%), ${bg(t)}`;
     document.getElementById("bars").innerHTML = threads.map((_, k) => `<i class="${k <= current ? "on" : ""}"></i>`).join("");
     const meta = [];
-    if (t.place) meta.push(`<span>${esc(t.place)} · 나와 ${distLabel(t.place)}</span>`);
+    if (t.place) meta.push(`<span>${esc(t.place)}${t.showDist ? ` · 나와 ${distLabel(t.place)}` : ""}</span>`);
     if (t.ref) meta.push(`<span class="ref"><span class="thumb" style="background-image:${t.ref.bg}"></span>${esc(t.ref.room)} · ${esc(t.ref.title)}</span>`);
     if (!isDm()) meta.push(t.archivable
       ? `<button class="${t.keptBy ? "on" : ""}" id="keepBtn">${t.keptBy ? `${subj(t.keptBy)} 보관함` : "보관하기"}</button>`
@@ -809,7 +813,10 @@
     threads.unshift({ by: "me", at: Date.now(), time: now(), title: title || "새 사진", unread: 0,
       photo: pickedUrl ? `url(${pickedUrl})` : null, color: pickColor(), replies: [],
       archivable: document.getElementById("allowKeep").checked,
-      place: document.getElementById("place").value || null });
+      place: document.getElementById("place").value || null,
+      showDist: !!document.getElementById("place").value && document.getElementById("showDist").checked });
+    document.getElementById("showDist").checked = false;
+    document.getElementById("distWrap").hidden = true;
     draft.value = ""; pickedUrl = null; picked.hidden = true;
     document.getElementById("place").value = "";
     toggleSheet(false);
