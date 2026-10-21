@@ -200,21 +200,16 @@
   .viewers button.on { opacity: 1; border-color: var(--deep); color: var(--ink); }
   /* 미니홈피 */
   .cy { display: flex; flex-direction: column; gap: 8px; padding: 12px; background: var(--paper); }
-  .cy-title { font-size: 13px; font-weight: 700; padding: 2px 4px; }
-  .cy-box { background: #fff; border: 1px solid var(--line); border-radius: 6px; }
-  .cy-profile { display: flex; gap: 14px; padding: 14px; }
-  .cy-pic { width: 96px; height: 96px; flex: none; border-radius: 6px; display: grid; place-items: center; font-size: 36px; color: #fff; }
+  .cy-profile { display: flex; align-items: center; gap: 16px; padding: 8px 6px 4px; }
+  .cy-pic { width: 76px; height: 76px; flex: none; border-radius: 50%; display: grid; place-items: center; font-size: 28px; color: #fff; }
   .cy-info { min-width: 0; display: flex; flex-direction: column; gap: 2px; }
-  .cy-today { font-size: 10px; letter-spacing: .04em; color: var(--slate); font-variant-numeric: tabular-nums; }
-  .cy-today b { color: #e2876a; }
-  .cy-info strong { font-size: 16px; margin-top: 4px; }
-  .cy-info p { font-size: 12px; color: var(--slate); line-height: 1.5; }
-  .cy-info .ilchon { margin-top: auto; font-size: 11px; color: var(--deep); }
-  .cy-stats { display: grid; grid-template-columns: 1fr 1fr; }
-  .cy-stats span { display: flex; justify-content: space-between; padding: 10px 14px; font-size: 12px; color: var(--deep); }
-  .cy-stats span:nth-child(odd) { border-right: 1px solid var(--line); }
-  .cy-stats span:nth-child(-n+2) { border-bottom: 1px solid var(--line); }
-  .cy-stats b { color: #e2876a; font-weight: 500; font-variant-numeric: tabular-nums; }
+  .cy-info strong { font-size: 19px; letter-spacing: -0.03em; }
+  .cy-info p { font-size: 13px; color: var(--slate); }
+  .cy-today { align-self: flex-start; margin-top: 6px; font-size: 11px; color: var(--slate); padding: 3px 9px; border-radius: 999px; background: var(--cream); font-variant-numeric: tabular-nums; }
+  .cy-today b { color: var(--deep); font-weight: 700; }
+  .cy-stats { display: grid; grid-template-columns: repeat(4, 1fr); padding: 6px 0 4px; }
+  .cy-stats span { display: flex; flex-direction: column; align-items: center; gap: 2px; font-size: 11px; color: var(--slate); }
+  .cy-stats b { font-size: 17px; font-weight: 700; color: var(--ink); font-variant-numeric: tabular-nums; }
   .cy-room-hd { display: flex; align-items: baseline; justify-content: space-between; padding: 10px 14px 8px; }
   .cy-room-hd b { font-size: 13px; color: var(--deep); font-style: italic; }
   .cy-room-hd span { font-size: 11px; color: var(--slate); }
@@ -344,17 +339,15 @@
         <div class="viewers" id="viewers"></div>
       </div>
       <div class="cy" id="cy">
-        <div class="cy-title" id="cyTitle"></div>
-        <div class="cy-box cy-profile">
+        <div class="cy-profile">
           <span class="cy-pic" id="cyPic"></span>
           <div class="cy-info">
-            <span class="cy-today" id="cyToday"></span>
             <strong id="cyName"></strong>
             <p id="cyBio"></p>
-            <span class="ilchon" id="cyIlchon"></span>
+            <span class="cy-today" id="cyToday"></span>
           </div>
         </div>
-        <div class="cy-box cy-stats" id="cyStats"></div>
+        <div class="cy-stats" id="cyStats"></div>
         <div class="cy-box" id="cyRoom">
           <div class="cy-room-hd"><b>Mini Room</b><span>방명록 메모 · 스티커</span></div>
           <div class="board" id="board"></div>
@@ -860,17 +853,15 @@
     home.total = home.total || home.today * 37;
     const memos = home.items.filter(i => i.type === "memo").length;
     const photos = rooms.flatMap(r => r.threads).filter(t => t.by === owner && t.photo).length;
-    document.getElementById("cyTitle").textContent = `${home.name} · ${home.bio || "소개가 아직 없어요"}`;
     const pic = document.getElementById("cyPic");
     pic.style.background = people[owner].color;
     pic.textContent = people[owner].name[0];
-    document.getElementById("cyToday").innerHTML = `TODAY <b>${home.today}</b> | TOTAL ${home.total}`;
+    document.getElementById("cyToday").innerHTML = `오늘 <b>${home.today}</b> · 전체 ${home.total}`;
     document.getElementById("cyName").textContent = people[owner].name;
     document.getElementById("cyBio").textContent = home.bio || "소개가 아직 없어요";
-    document.getElementById("cyIlchon").textContent = `일촌 ${home.viewers.length}`;
     document.getElementById("cyStats").innerHTML = `
-      <span>사진첩 <b>${photos}</b></span><span>방명록 <b>${memos}</b></span>
-      <span>스티커 <b>${home.items.length - memos}</b></span><span>홈 <b>${list.length}</b></span>`;
+      <span><b>${home.viewers.length}</b>일촌</span><span><b>${photos}</b>사진첩</span>
+      <span><b>${memos}</b>방명록</span><span><b>${home.items.length - memos}</b>스티커</span>`;
     board.innerHTML = "";
     home.items.forEach(it => {
       const d = document.createElement("div");
