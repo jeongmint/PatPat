@@ -213,6 +213,7 @@
   .cy-room-hd { display: flex; align-items: baseline; justify-content: space-between; padding: 10px 14px 8px; }
   .cy-room-hd b { font-size: 13px; color: var(--deep); font-style: italic; }
   .cy-room-hd span { font-size: 11px; color: var(--slate); }
+  .skin-btn { font-size: 12px; padding: 5px 12px; border-radius: 999px; background: var(--ink); color: #fff; }
   .board { position: relative; aspect-ratio: 1 / 1; max-width: 100%; overflow: hidden; touch-action: none; background: linear-gradient(#ffffff, #f4efe6); }
   .board canvas { display: block; width: 100%; height: 100%; }
   .item { position: absolute; transform: translate(-50%, -50%) rotate(var(--r)); user-select: none; }
@@ -344,7 +345,9 @@
         </div>
         <div class="cy-stats" id="cyStats"></div>
         <div class="cy-box" id="cyRoom">
-          <div class="cy-room-hd"><b>Mini Room</b><span>방명록 메모 · 스티커</span></div>
+          <div class="cy-room-hd"><b>Mini Room</b><span id="roomNote">방명록 메모 · 스티커</span>
+            <button class="skin-btn" id="skinBtn">📷 사진으로 옷 입히기</button>
+            <input type="file" id="skinFile" accept="image/*" capture="environment" hidden></div>
           <div class="board" id="board"></div>
           <div class="tools" id="tools">
             <span id="emos"></span>
@@ -773,6 +776,7 @@
   const emojis = ["🍀", "🐱", "🎵", "☕", "🌙", "👍", "💌"];
   const memoColors = ["#BFEFE0", "#F3E3C8", "#fff", "#D6C7B0"];
   let owner = "me", homeIdx = 0, memoColor = memoColors[0];
+  const skins = {}; // 사람별로 직접 고른 캐릭터 사진
 
   // 내가 볼 수 있는 홈만
   const visibleHomes = id => id === "me" ? homes.me : (homes[id] || []).filter(h => h.viewers.includes("me"));
@@ -858,12 +862,14 @@
     document.getElementById("cyStats").innerHTML = `
       <span><b>${home.viewers.length}</b>일촌</span><span><b>${photos}</b>사진첩</span>
       <span><b>${memos}</b>방명록</span><span><b>${home.items.length - memos}</b>스티커</span>`;
+    document.getElementById("skinBtn").hidden = !mine;
+    document.getElementById("roomNote").hidden = mine;
     room3d.show(home, owner);
   }
 
   // 3D 미니룸: 벽 두 면 + 바닥. 메모는 뒷벽에, 스티커는 바닥에, 캐릭터는 방 안을 돌아다님
   const room3d = (() => {
-    if (!window.THREE) return { show() {}, start() {}, stop() {} };
+    if (!window.THREE) return { show() {}, applySkin() {}, start() {}, stop() {} };
     const T = THREE, board = document.getElementById("board");
     const renderer = new T.WebGLRenderer({ antialias: true, alpha: true });
     renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
@@ -946,28 +952,29 @@
         m.userData.it = it;
         items.add(m);
       });
-      body.material.color.set(people[ownerId].color);
-      tintFromPhoto(ownerId);
+      applySkin(ownerId);
       resize();
     }
 
-    // 최근 올린 사진의 평균 색으로 몸을 칠함
-    function tintFromPhoto(ownerId) {
+    // 사진을 몸 텍스처로 씌움. 직접 고른 사진 > 최근 올린 사진 > 프로필 색
+    const loader = new T.TextureLoader();
+    function skinFor(ownerId) {
+      if (skins[ownerId]) return skins[ownerId];
       const t = rooms.flatMap(r => r.threads).find(t => t.by === ownerId && /^url\(/.test(t.photo || ""));
-      if (!t) return;
-      const img = new Image();
-      img.onload = () => {
-        try {
-          const c = document.createElement("canvas"); c.width = c.height = 8;
-          const g = c.getContext("2d"); g.drawImage(img, 0, 0, 8, 8);
-          const d = g.getImageData(0, 0, 8, 8).data;
-          let r = 0, gg = 0, b = 0;
-          for (let i = 0; i < d.length; i += 4) { r += d[i]; gg += d[i + 1]; b += d[i + 2]; }
-          const n = d.length / 4;
-          body.material.color.setRGB(r / n / 255, gg / n / 255, b / n / 255);
-        } catch (e) { /* 읽을 수 없는 이미지면 프로필 색 유지 */ }
-      };
-      img.src = t.photo.slice(4, -1);
+      return t ? t.photo.slice(4, -1) : null;
+    }
+    function applySkin(ownerId) {
+      body.material.map = null;
+      body.material.color.set(people[ownerId].color);
+      body.material.needsUpdate = true;
+      const url = skinFor(ownerId);
+      if (!url) return;
+      loader.load(url, tex => {
+        if (ownerId !== owner) return; // 그새 다른 홈으로 이동함
+        body.material.map = tex;
+        body.material.color.set(0xffffff);
+        body.material.needsUpdate = true;
+      });
     }
 
     function resize() {
@@ -1041,6 +1048,7 @@
 
     return {
       show,
+      applySkin,
       start() { if (!raf) raf = requestAnimationFrame(loop); },
       stop() { cancelAnimationFrame(raf); raf = null; },
     };
@@ -1082,6 +1090,15 @@
   };
 
   document.getElementById("meBtn").onclick = () => { owner = "me"; homeIdx = 0; renderMine(); app.classList.add("mine-open"); room3d.start(); };
+  const skinFile = document.getElementById("skinFile");
+  document.getElementById("skinBtn").onclick = () => skinFile.click();
+  skinFile.onchange = () => {
+    const f = skinFile.files[0];
+    if (!f) return;
+    skins.me = URL.createObjectURL(f);
+    skinFile.value = "";
+    room3d.applySkin("me");
+  };
   document.getElementById("mineBack").onclick = () => { app.classList.remove("mine-open"); room3d.stop(); };
 
   renderHome();
