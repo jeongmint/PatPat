@@ -90,15 +90,15 @@
   /* 홈: 큰 대표 스토리 + 주제별 가로 줄 */
   .hero {
     position: relative; display: flex; flex-direction: column; justify-content: flex-end; gap: 8px;
-    width: calc(100% - 32px); margin: 0 16px; aspect-ratio: 16 / 10; max-height: 260px; padding: 16px; text-align: left; color: #fff;
+    width: 100%; aspect-ratio: 1 / 1; max-height: 480px; padding: 20px; text-align: left; color: #fff;
     background-size: cover; background-position: center;
   }
   .hero .kicker { font-size: 12px; color: #ffffffcc; display: flex; align-items: center; gap: 6px; }
-  .hero h2 { font-size: 22px; font-weight: 700; line-height: 1.2; letter-spacing: -0.03em; text-wrap: balance; }
-  .hero .last { font-size: 13px; color: #ffffffd9; }
+  .hero h2 { font-size: 30px; font-weight: 700; line-height: 1.2; letter-spacing: -0.03em; text-wrap: balance; }
+  .hero .last { font-size: 14px; color: #ffffffd9; }
   .hero-btns { height: 0; }
-  .hero h2, .hero .last { padding-right: 52px; }
-  .reply-ic { position: absolute; right: 16px; bottom: 16px; width: 40px; height: 40px; border-radius: 50%; background: #fff; color: #111; display: grid; place-items: center; }
+  .hero h2, .hero .last { padding-right: 60px; }
+  .reply-ic { position: absolute; right: 20px; bottom: 20px; width: 48px; height: 48px; border-radius: 50%; background: #fff; color: #111; display: grid; place-items: center; }
   .reply-ic svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linejoin: round; }
   .dot {
     position: absolute; top: -4px; right: -4px; min-width: 20px; height: 20px; padding: 0 5px; border-radius: 999px;
@@ -544,7 +544,7 @@
     } else {
       const b = document.createElement("button");
       b.className = "hero";
-      b.style.backgroundImage = `linear-gradient(#0000 30%, #000c), ${bg(lead)}`;
+      b.style.backgroundImage = `linear-gradient(#0000 35%, var(--paper)), linear-gradient(#0007, #0000 25%), ${bg(lead)}`;
       b.innerHTML = `
         <div class="kicker">${av(lead.by, "s")}${people[lead.by].name}${lead.place ? ` · ${esc(lead.place)}` : ""}${lead.showDist ? ` · ${distLabel(lead.place)}` : ""} · ${keep || !fresh(lead) ? lead.time : `${hoursLeft(lead)}시간 남음`}</div>
         <h2>${esc(lead.title)}</h2>
