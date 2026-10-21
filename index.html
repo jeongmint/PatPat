@@ -97,8 +97,11 @@
   .hero h2 { font-size: 30px; font-weight: 700; line-height: 1.2; letter-spacing: -0.03em; text-wrap: balance; }
   .hero .last { font-size: 14px; color: #ffffffd9; }
   .hero-btns { height: 0; }
+  .hero .tabs { margin: 8px -20px 0 -12px; padding: 4px 0 0 0; }
+  .hero .rooms button:not(.on) { background: #ffffff26; color: #fff; backdrop-filter: blur(8px); }
+  .hero .new { color: #fff; }
   .hero h2, .hero .last { padding-right: 60px; }
-  .reply-ic { position: absolute; right: 20px; bottom: 20px; width: 48px; height: 48px; border-radius: 50%; background: #fff; color: #111; display: grid; place-items: center; }
+  .reply-ic { position: absolute; right: 20px; bottom: 70px; width: 48px; height: 48px; border-radius: 50%; background: #fff; color: #111; display: grid; place-items: center; }
   .reply-ic svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linejoin: round; }
   .dot {
     position: absolute; top: -4px; right: -4px; min-width: 20px; height: 20px; padding: 0 5px; border-radius: 999px;
@@ -293,7 +296,7 @@
       </div>
       <button class="icon-btn" aria-label="검색"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4 4"/></svg></button>
     </div>
-    <div class="tabs">
+    <div class="tabs" id="tabs">
       <button class="new" id="upload" aria-label="새 스레드 시작" aria-expanded="false"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></button>
       <div class="rooms" id="rooms"></div>
       <input type="file" id="file" accept="image/*" hidden>
@@ -520,6 +523,7 @@
   const now = () => new Date().toTimeString().slice(0, 5);
 
   function renderHome() {
+    document.querySelector(".home .top").after(tabsEl);
     const menu = document.getElementById("rooms");
     menu.innerHTML = "";
     rooms.forEach((r, k) => {
@@ -542,8 +546,9 @@
     if (!lead) {
       hero.innerHTML = `<div class="home-empty">아직 이야기가 없어요.<br>＋로 첫 사진이나 글을 올려 보세요</div>`;
     } else {
-      const b = document.createElement("button");
+      const b = document.createElement("div");
       b.className = "hero";
+      b.setAttribute("role", "button"); b.tabIndex = 0;
       b.style.backgroundImage = `linear-gradient(#0000 35%, var(--paper)), linear-gradient(#0007, #0000 25%), ${bg(lead)}`;
       b.innerHTML = `
         <div class="kicker">${av(lead.by, "s")}${people[lead.by].name}${lead.place ? ` · ${esc(lead.place)}` : ""}${lead.showDist ? ` · ${distLabel(lead.place)}` : ""} · ${keep || !fresh(lead) ? lead.time : `${hoursLeft(lead)}시간 남음`}</div>
@@ -551,9 +556,11 @@
         <div class="last">${lastLine(lead)}</div>
         <div class="hero-btns"><span class="reply-ic" aria-label="답장 ${lead.replies.length}개${lead.unread ? `, 새 답장 ${lead.unread}개` : ""}">
           <svg viewBox="0 0 24 24"><path d="M4 5h16v11H9l-5 4z"/></svg>${lead.unread ? `<i class="dot">${lead.unread}</i>` : ""}</span></div>`;
-      b.onclick = () => openThread(threads.indexOf(lead));
+      // 방 칩을 누를 땐 스레드를 열지 않음
+      b.onclick = e => { if (!e.target.closest(".tabs")) openThread(threads.indexOf(lead)); };
       hero.appendChild(b);
     }
+    placeTabs();
 
     // 주제별 가로 줄
     const rows = keep
@@ -580,6 +587,14 @@
       box.appendChild(sec);
     });
     renderMap();
+  }
+
+  // 방 칩: 피드에선 대표 스토리 글씨 아래, 지도에선 맨 위
+  // 대표 스토리를 다시 그리면 그 안의 칩도 지워지므로 참조를 들고 다님
+  const tabsEl = document.getElementById("tabs");
+  function placeTabs() {
+    if (!document.getElementById("mapView").hidden) document.querySelector(".home .top").after(tabsEl);
+    else (document.querySelector("#hero .hero") || document.getElementById("hero")).appendChild(tabsEl);
   }
 
   function renderMap() {
