@@ -457,9 +457,22 @@
 
   // 동네 단위 위치 (지도 좌표: 100 x 125)
   const places = {
-    "망원": { x: 24, y: 44 }, "합정": { x: 28, y: 68 }, "홍대": { x: 52, y: 56 }, "연남": { x: 40, y: 24 },
-    "신촌": { x: 72, y: 38 }, "여의도": { x: 48, y: 112 }, "성수": { x: 78, y: 70 },
+    "망원": { x: 24, y: 44, lat: 37.5560, lng: 126.9105 }, "합정": { x: 28, y: 68, lat: 37.5496, lng: 126.9139 },
+    "홍대": { x: 52, y: 56, lat: 37.5571, lng: 126.9245 }, "연남": { x: 40, y: 24, lat: 37.5622, lng: 126.9230 },
+    "신촌": { x: 72, y: 38, lat: 37.5551, lng: 126.9368 }, "여의도": { x: 48, y: 112, lat: 37.5219, lng: 126.9245 },
+    "성수": { x: 78, y: 70, lat: 37.5446, lng: 127.0560 },
   };
+  // 나와의 거리: 동네 중심끼리 계산하므로 "약"으로 표시. 내 위치는 내 상태의 동네(없으면 홍대)
+  function distLabel(place) {
+    if (!place || !places[place]) return "";
+    const mine = (statuses.me && statuses.me.place) || "홍대";
+    if (place === mine) return "같은 동네";
+    const a = places[mine], b = places[place], R = 6371e3, rad = Math.PI / 180;
+    const h = Math.sin((b.lat - a.lat) * rad / 2) ** 2 +
+      Math.cos(a.lat * rad) * Math.cos(b.lat * rad) * Math.sin((b.lng - a.lng) * rad / 2) ** 2;
+    const m = 2 * R * Math.asin(Math.sqrt(h));
+    return m < 1000 ? `약 ${Math.round(m / 100) * 100}m` : `약 ${(m / 1000).toFixed(1)}km`;
+  }
   // 예시 곡 (Spotify 연결 전)
   const tracks = {
     nanchun:  { title: "난춘", artist: "새소년", dur: 263, cover: "linear-gradient(135deg,#e9a3a0,#6B7280)" },
@@ -526,7 +539,7 @@
       b.className = "hero";
       b.style.backgroundImage = `linear-gradient(#0000 35%, var(--paper)), linear-gradient(#0007, #0000 25%), ${bg(lead)}`;
       b.innerHTML = `
-        <div class="kicker">${av(lead.by, "s")}${people[lead.by].name}${lead.place ? ` · ${esc(lead.place)}` : ""} · ${keep || !fresh(lead) ? lead.time : `${hoursLeft(lead)}시간 남음`}</div>
+        <div class="kicker">${av(lead.by, "s")}${people[lead.by].name}${lead.place ? ` · ${esc(lead.place)} · ${distLabel(lead.place)}` : ""} · ${keep || !fresh(lead) ? lead.time : `${hoursLeft(lead)}시간 남음`}</div>
         <h2>${esc(lead.title)}</h2>
         <div class="last">${lastLine(lead)}</div>
         <div class="hero-btns"><span class="primary">답장하기</span>
@@ -552,7 +565,7 @@
         b.innerHTML = `
           ${t.unread ? `<span class="badge">새 답장 ${t.unread}</span>` : t.keptBy && !keep ? `<span class="badge pin">보관</span>` : ""}
           <h4>${esc(t.title)}</h4>
-          <div class="meta">${people[t.by].name} · ${t.time}</div>
+          <div class="meta">${people[t.by].name} · ${t.place ? distLabel(t.place) : t.time}</div>
           ${left !== null ? `<span class="time-left"><i style="width:${left * 100}%"></i></span>` : ""}`;
         b.onclick = () => openThread(threads.indexOf(t));
         sec.querySelector(".row-list").appendChild(b);
@@ -689,7 +702,7 @@
     document.getElementById("thread").style.backgroundImage = `linear-gradient(#0006, #0000 28%, #0000 40%, #000d 78%), ${bg(t)}`;
     document.getElementById("bars").innerHTML = threads.map((_, k) => `<i class="${k <= current ? "on" : ""}"></i>`).join("");
     const meta = [];
-    if (t.place) meta.push(`<span>${esc(t.place)}</span>`);
+    if (t.place) meta.push(`<span>${esc(t.place)} · 나와 ${distLabel(t.place)}</span>`);
     if (t.ref) meta.push(`<span class="ref"><span class="thumb" style="background-image:${t.ref.bg}"></span>${esc(t.ref.room)} · ${esc(t.ref.title)}</span>`);
     if (!isDm()) meta.push(t.archivable
       ? `<button class="${t.keptBy ? "on" : ""}" id="keepBtn">${t.keptBy ? `${subj(t.keptBy)} 보관함` : "보관하기"}</button>`
