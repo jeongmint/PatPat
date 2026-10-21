@@ -213,13 +213,8 @@
   .cy-room-hd { display: flex; align-items: baseline; justify-content: space-between; padding: 10px 14px 8px; }
   .cy-room-hd b { font-size: 13px; color: var(--deep); font-style: italic; }
   .cy-room-hd span { font-size: 11px; color: var(--slate); }
-  .board {
-    position: relative; aspect-ratio: 4 / 3; max-width: 100%; overflow: hidden; touch-action: none;
-    background:
-      linear-gradient(#0000 58%, #d9c8ad 58%, #d9c8ad 59%, #0000 59%),
-      repeating-linear-gradient(90deg, #f7f0e4 0 18px, #f3eadb 18px 36px) top / 100% 58% no-repeat,
-      repeating-conic-gradient(#ead9bf 0 25%, #e2cfb2 0 50%) 0 0 / 28px 28px;
-  }
+  .board { position: relative; aspect-ratio: 1 / 1; max-width: 100%; overflow: hidden; touch-action: none; background: linear-gradient(#ffffff, #f4efe6); }
+  .board canvas { display: block; width: 100%; height: 100%; }
   .item { position: absolute; transform: translate(-50%, -50%) rotate(var(--r)); user-select: none; }
   .item.mine-item { cursor: grab; }
   .item.memo { width: 120px; padding: 10px 10px 8px; font-size: 13px; line-height: 1.45; color: var(--ink); box-shadow: 0 4px 10px #6b728026; }
@@ -363,11 +358,12 @@
         </div>
       </div>
       <div class="locked" id="locked" hidden></div>
-      <p class="hint">내가 붙인 메모와 스티커는 끌어서 옮길 수 있어요.</p>
+      <p class="hint">내가 붙인 메모와 스티커는 끌어서 옮길 수 있어요. 캐릭터를 누르면 점프해요.</p>
     </div>
   </section>
 </div>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script>
   const people = {
     me:    { name: "나",   color: "#87CBB9" },
@@ -862,37 +858,193 @@
     document.getElementById("cyStats").innerHTML = `
       <span><b>${home.viewers.length}</b>일촌</span><span><b>${photos}</b>사진첩</span>
       <span><b>${memos}</b>방명록</span><span><b>${home.items.length - memos}</b>스티커</span>`;
-    board.innerHTML = "";
-    home.items.forEach(it => {
-      const d = document.createElement("div");
-      d.className = `item ${it.type}` + (it.by === "me" ? " mine-item" : "");
-      d.style.left = it.x + "%"; d.style.top = it.y + "%";
-      d.style.setProperty("--r", it.r + "deg");
-      if (it.type === "memo") {
-        d.style.background = it.color;
-        d.innerHTML = `${esc(it.text)}<div class="by">${av(it.by, "s")}${people[it.by].name}</div>`;
-      } else {
-        d.textContent = it.emoji;
-        d.title = `${people[it.by].name}의 스티커`;
-      }
-      if (it.by === "me") drag(d, it, board);
-      board.appendChild(d);
-    });
+    room3d.show(home, owner);
   }
 
-  // 내가 붙인 것만 끌어서 옮기기
-  function drag(el, it, board) {
-    el.onpointerdown = e => {
-      el.setPointerCapture(e.pointerId);
-      const rect = board.getBoundingClientRect();
-      el.onpointermove = m => {
-        it.x = Math.min(95, Math.max(5, (m.clientX - rect.left) / rect.width * 100));
-        it.y = Math.min(95, Math.max(5, (m.clientY - rect.top) / rect.height * 100));
-        el.style.left = it.x + "%"; el.style.top = it.y + "%";
+  // 3D 미니룸: 벽 두 면 + 바닥. 메모는 뒷벽에, 스티커는 바닥에, 캐릭터는 방 안을 돌아다님
+  const room3d = (() => {
+    if (!window.THREE) return { show() {}, start() {}, stop() {} };
+    const T = THREE, board = document.getElementById("board");
+    const renderer = new T.WebGLRenderer({ antialias: true, alpha: true });
+    renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+    board.appendChild(renderer.domElement);
+    const scene = new T.Scene();
+    const cam = new T.OrthographicCamera(-4, 4, 4, -4, 0.1, 50);
+    cam.position.set(7, 6.5, 7);
+    cam.lookAt(0, 1.1, 0);
+    scene.add(new T.HemisphereLight(0xffffff, 0xcbbca3, 0.75));
+    const sun = new T.DirectionalLight(0xffffff, 0.5);
+    sun.position.set(4, 8, 3);
+    scene.add(sun);
+
+    const flat = c => new T.MeshStandardMaterial({ color: c, flatShading: true, roughness: 0.9 });
+    const box = (w, h, d, c, x, y, z) => { const m = new T.Mesh(new T.BoxGeometry(w, h, d), flat(c)); m.position.set(x, y, z); scene.add(m); return m; };
+    box(6, 0.2, 6, 0xdcc8a8, 0, -0.1, 0);              // 바닥
+    const back = box(6, 4, 0.2, 0xf7f0e4, 0, 2, -3.1);  // 뒷벽
+    const left = box(0.2, 4, 6, 0xf1e8d8, -3.1, 2, 0);  // 옆벽
+    const rug = new T.Mesh(new T.CylinderGeometry(1.3, 1.3, 0.03, 10), flat(0xbfefe0));
+    rug.position.set(0.4, 0.02, 0.6); scene.add(rug);
+    box(1.6, 0.9, 0.8, 0xd6c7b0, 1.8, 0.45, -2.5);      // 선반
+    const pot = new T.Mesh(new T.CylinderGeometry(0.25, 0.2, 0.4, 7), flat(0xc98b72));
+    pot.position.set(-2.4, 0.2, -2.4); scene.add(pot);
+    const leaf = new T.Mesh(new T.IcosahedronGeometry(0.45, 0), flat(0x87cbb9));
+    leaf.position.set(-2.4, 0.75, -2.4); scene.add(leaf);
+
+    // 캐릭터: 둥근 로우폴리 몸 + 눈 + 볼 + 더듬이
+    const hero = new T.Group();
+    const body = new T.Mesh(new T.SphereGeometry(0.55, 10, 7), flat(0x87cbb9));
+    body.scale.set(1, 1.1, 0.95); body.position.y = 0.6; hero.add(body);
+    const dot = (r, c, x, y, z) => { const m = new T.Mesh(new T.SphereGeometry(r, 6, 4), flat(c)); m.position.set(x, y, z); hero.add(m); return m; };
+    dot(0.07, 0x2f3440, -0.17, 0.72, 0.5); dot(0.07, 0x2f3440, 0.17, 0.72, 0.5);
+    dot(0.08, 0xf0a58a, -0.3, 0.58, 0.44); dot(0.08, 0xf0a58a, 0.3, 0.58, 0.44);
+    const tip = dot(0.1, 0x4f9a87, 0, 1.45, 0);
+    const stem = new T.Mesh(new T.CylinderGeometry(0.025, 0.025, 0.35, 5), flat(0x4f9a87));
+    stem.position.y = 1.25; hero.add(stem);
+    const shadow = new T.Mesh(new T.CircleGeometry(0.5, 12), new T.MeshBasicMaterial({ color: 0x000000, transparent: true, opacity: 0.12 }));
+    shadow.rotation.x = -Math.PI / 2; shadow.position.y = 0.01;
+    scene.add(shadow, hero);
+
+    // 메모·스티커 텍스처
+    function memoTex(it) {
+      const c = document.createElement("canvas"); c.width = c.height = 256;
+      const g = c.getContext("2d");
+      g.fillStyle = it.color; g.fillRect(0, 0, 256, 256);
+      g.fillStyle = "#2f3440"; g.font = "500 30px 'Noto Sans KR', sans-serif";
+      let line = "", y = 52;
+      for (const ch of it.text) {
+        if (g.measureText(line + ch).width > 216) { g.fillText(line, 20, y); line = ""; y += 40; }
+        line += ch;
+      }
+      g.fillText(line, 20, y);
+      g.fillStyle = "#6B7280"; g.font = "24px 'Noto Sans KR', sans-serif";
+      g.fillText("— " + people[it.by].name, 20, 230);
+      return new T.CanvasTexture(c);
+    }
+    function emojiTex(e) {
+      const c = document.createElement("canvas"); c.width = c.height = 128;
+      const g = c.getContext("2d");
+      g.font = "96px sans-serif"; g.textAlign = "center"; g.textBaseline = "middle";
+      g.fillText(e, 64, 70);
+      return new T.CanvasTexture(c);
+    }
+    // 저장 좌표(%) ↔ 방 좌표
+    const memoPos = it => new T.Vector3(-2.2 + it.x / 100 * 4.4, 3.3 - it.y / 100 * 2.4, -2.98);
+    const stickerPos = it => new T.Vector3(-2.4 + it.x / 100 * 5, 0.4, -2.2 + it.y / 100 * 4.6);
+
+    let items = new T.Group(); scene.add(items);
+    function show(home, ownerId) {
+      scene.remove(items); items = new T.Group(); scene.add(items);
+      home.items.forEach(it => {
+        let m;
+        if (it.type === "memo") {
+          m = new T.Mesh(new T.PlaneGeometry(1.5, 1.5), new T.MeshBasicMaterial({ map: memoTex(it) }));
+          m.position.copy(memoPos(it)); m.rotation.z = -it.r * Math.PI / 180;
+        } else {
+          m = new T.Sprite(new T.SpriteMaterial({ map: emojiTex(it.emoji) }));
+          m.scale.set(0.95, 0.95, 1); m.position.copy(stickerPos(it));
+        }
+        m.userData.it = it;
+        items.add(m);
+      });
+      body.material.color.set(people[ownerId].color);
+      tintFromPhoto(ownerId);
+      resize();
+    }
+
+    // 최근 올린 사진의 평균 색으로 몸을 칠함
+    function tintFromPhoto(ownerId) {
+      const t = rooms.flatMap(r => r.threads).find(t => t.by === ownerId && /^url\(/.test(t.photo || ""));
+      if (!t) return;
+      const img = new Image();
+      img.onload = () => {
+        try {
+          const c = document.createElement("canvas"); c.width = c.height = 8;
+          const g = c.getContext("2d"); g.drawImage(img, 0, 0, 8, 8);
+          const d = g.getImageData(0, 0, 8, 8).data;
+          let r = 0, gg = 0, b = 0;
+          for (let i = 0; i < d.length; i += 4) { r += d[i]; gg += d[i + 1]; b += d[i + 2]; }
+          const n = d.length / 4;
+          body.material.color.setRGB(r / n / 255, gg / n / 255, b / n / 255);
+        } catch (e) { /* 읽을 수 없는 이미지면 프로필 색 유지 */ }
       };
-      el.onpointerup = () => { el.onpointermove = null; };
+      img.src = t.photo.slice(4, -1);
+    }
+
+    function resize() {
+      const w = board.clientWidth, h = board.clientHeight;
+      if (!w) return;
+      renderer.setSize(w, h, false);
+      const a = w / h;
+      cam.left = -3.7 * a; cam.right = 3.7 * a; cam.top = 3.7; cam.bottom = -3.7;
+      cam.updateProjectionMatrix();
+    }
+    new ResizeObserver(resize).observe(board);
+
+    // 돌아다니기 + 점프
+    let target = new T.Vector3(), jumpT = 0, raf = null;
+    const pickTarget = () => target.set(-2 + Math.random() * 4, 0, -1.6 + Math.random() * 3.6);
+    pickTarget();
+    function loop(t) {
+      raf = requestAnimationFrame(loop);
+      const dir = target.clone().sub(hero.position); dir.y = 0;
+      if (dir.length() < 0.05) {
+        // 멈춰 있을 땐 카메라 쪽을 봄
+        hero.rotation.y += (Math.PI / 4 - hero.rotation.y) * 0.05;
+        if (Math.random() < 0.006) pickTarget();
+      }
+      else {
+        hero.position.addScaledVector(dir.normalize(), 0.012);
+        hero.rotation.y += (Math.atan2(dir.x, dir.z) - hero.rotation.y) * 0.08;
+      }
+      const bob = Math.abs(Math.sin(t / 180)) * 0.06;
+      if (jumpT > 0) jumpT -= 0.03;
+      hero.position.y = bob + Math.sin(Math.max(0, jumpT) * Math.PI) * 0.8;
+      tip.position.x = Math.sin(t / 300) * 0.06;
+      shadow.position.set(hero.position.x, 0.01, hero.position.z);
+      renderer.render(scene, cam);
+    }
+
+    // 누르기: 캐릭터는 점프, 내 메모·스티커는 끌어서 옮기기
+    const ray = new T.Raycaster(), ptr = new T.Vector2();
+    const wallPlane = new T.Plane(new T.Vector3(0, 0, 1), 2.98);
+    const floorPlane = new T.Plane(new T.Vector3(0, 1, 0), -0.4);
+    let dragging = null;
+    const aim = e => {
+      const r = renderer.domElement.getBoundingClientRect();
+      ptr.set((e.clientX - r.left) / r.width * 2 - 1, -(e.clientY - r.top) / r.height * 2 + 1);
+      ray.setFromCamera(ptr, cam);
     };
-  }
+    renderer.domElement.addEventListener("pointerdown", e => {
+      aim(e);
+      const hit = ray.intersectObjects(items.children)[0];
+      if (hit && hit.object.userData.it.by === "me") {
+        dragging = hit.object;
+        renderer.domElement.setPointerCapture(e.pointerId);
+      } else if (ray.intersectObject(hero, true).length) {
+        jumpT = 1;
+      }
+    });
+    renderer.domElement.addEventListener("pointermove", e => {
+      if (!dragging) return;
+      aim(e);
+      const it = dragging.userData.it, p = new T.Vector3();
+      const clamp = v => Math.min(95, Math.max(5, v));
+      if (it.type === "memo" && ray.ray.intersectPlane(wallPlane, p)) {
+        it.x = clamp((p.x + 2.2) / 4.4 * 100); it.y = clamp((3.3 - p.y) / 2.4 * 100);
+        dragging.position.copy(memoPos(it));
+      } else if (it.type === "sticker" && ray.ray.intersectPlane(floorPlane, p)) {
+        it.x = clamp((p.x + 2.4) / 5 * 100); it.y = clamp((p.z + 2.2) / 4.6 * 100);
+        dragging.position.copy(stickerPos(it));
+      }
+    });
+    renderer.domElement.addEventListener("pointerup", () => { dragging = null; });
+
+    return {
+      show,
+      start() { if (!raf) raf = requestAnimationFrame(loop); },
+      stop() { cancelAnimationFrame(raf); raf = null; },
+    };
+  })();
 
   const tilt = () => Math.round(Math.random() * 16 - 8);
   const currentHome = () => visibleHomes(owner)[homeIdx];
@@ -929,8 +1081,8 @@
     renderMine();
   };
 
-  document.getElementById("meBtn").onclick = () => { owner = "me"; homeIdx = 0; renderMine(); app.classList.add("mine-open"); };
-  document.getElementById("mineBack").onclick = () => app.classList.remove("mine-open");
+  document.getElementById("meBtn").onclick = () => { owner = "me"; homeIdx = 0; renderMine(); app.classList.add("mine-open"); room3d.start(); };
+  document.getElementById("mineBack").onclick = () => { app.classList.remove("mine-open"); room3d.stop(); };
 
   renderHome();
 </script>
