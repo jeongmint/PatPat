@@ -96,9 +96,13 @@
   .hero h2 { font-size: 30px; font-weight: 700; line-height: 1.2; letter-spacing: -0.03em; text-wrap: balance; }
   .hero .last { font-size: 14px; color: #ffffffd9; }
   .hero-btns { display: flex; gap: 8px; margin-top: 6px; }
-  .hero-btns span { display: inline-flex; align-items: center; gap: 6px; height: 40px; padding: 0 18px; font-size: 14px; font-weight: 700; }
-  .hero-btns .primary { background: #fff; color: #111; }
-  .hero-btns .ghost2 { background: #ffffff2e; backdrop-filter: blur(8px); }
+  .reply-ic { position: relative; width: 48px; height: 48px; border-radius: 50%; background: #fff; color: #111; display: grid; place-items: center; }
+  .reply-ic svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linejoin: round; }
+  .dot {
+    position: absolute; top: -4px; right: -4px; min-width: 20px; height: 20px; padding: 0 5px; border-radius: 999px;
+    background: #ff4d4f; color: #fff; font-size: 11px; font-weight: 700; font-style: normal; display: grid; place-items: center;
+    border: 2px solid var(--paper); text-shadow: none; font-variant-numeric: tabular-nums;
+  }
   .row-hd { display: flex; align-items: baseline; gap: 8px; padding: 22px 16px 10px; }
   .row-hd h3 { font-size: 17px; font-weight: 700; }
   .row-hd span { font-size: 12px; color: var(--slate); }
@@ -543,8 +547,8 @@
         <div class="kicker">${av(lead.by, "s")}${people[lead.by].name}${lead.place ? ` · ${esc(lead.place)}` : ""}${lead.showDist ? ` · ${distLabel(lead.place)}` : ""} · ${keep || !fresh(lead) ? lead.time : `${hoursLeft(lead)}시간 남음`}</div>
         <h2>${esc(lead.title)}</h2>
         <div class="last">${lastLine(lead)}</div>
-        <div class="hero-btns"><span class="primary">답장하기</span>
-          ${lead.unread ? `<span class="ghost2">새 답장 ${lead.unread}</span>` : `<span class="ghost2">답장 ${lead.replies.length}</span>`}</div>`;
+        <div class="hero-btns"><span class="reply-ic" aria-label="답장 ${lead.replies.length}개${lead.unread ? `, 새 답장 ${lead.unread}개` : ""}">
+          <svg viewBox="0 0 24 24"><path d="M4 5h16v11H9l-5 4z"/></svg>${lead.unread ? `<i class="dot">${lead.unread}</i>` : ""}</span></div>`;
       b.onclick = () => openThread(threads.indexOf(lead));
       hero.appendChild(b);
     }
@@ -564,7 +568,7 @@
         b.style.backgroundImage = `linear-gradient(#0000 45%, #000c), ${bg(t)}`;
         const left = !keep && fresh(t) ? Math.max(0, 1 - (Date.now() - t.at) / (24 * H)) : null;
         b.innerHTML = `
-          ${t.unread ? `<span class="badge">새 답장 ${t.unread}</span>` : t.keptBy && !keep ? `<span class="badge pin">보관</span>` : ""}
+          ${t.unread ? `<i class="dot" style="top:6px;right:6px">${t.unread}</i>` : t.keptBy && !keep ? `<span class="badge pin">보관</span>` : ""}
           <h4>${esc(t.title)}</h4>
           <div class="meta">${people[t.by].name} · ${t.showDist ? distLabel(t.place) : t.time}</div>
           ${left !== null ? `<span class="time-left"><i style="width:${left * 100}%"></i></span>` : ""}`;
