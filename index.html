@@ -13,17 +13,20 @@
     --teal: #87CBB9;
     --deep: #4f9a87;
     --sand: #D6C7B0;
-    --cream: #F3EDE2;
-    --slate: #6B7280;
-    --ink: #2f3440;
-    --paper: #ffffff;
-    --line: #ece8e1;
+    --cream: #22252a;   /* 칩·보조 면 */
+    --slate: #9ba1a8;   /* 보조 글씨 */
+    --ink: #f4f4f5;     /* 본문 글씨 */
+    --paper: #0e0f11;   /* 바탕 */
+    --surface: #17191c; /* 카드·입력 면 */
+    --line: #2a2d32;
+    --on-light: #2f3440; /* 밝은 면 위 글씨 */
+    color-scheme: dark;
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
   [hidden] { display: none !important; }
   html, body { height: 100%; }
   body {
-    background: #fff; color: var(--ink);
+    background: var(--paper); color: var(--ink);
     font-family: "Noto Sans KR", system-ui, sans-serif; letter-spacing: -0.02em;
     display: flex; justify-content: center; overflow: hidden;
   }
@@ -42,19 +45,19 @@
   /* 상단 */
   .top { display: flex; align-items: center; justify-content: space-between; padding: 16px 20px 8px; }
   .me { width: 40px; height: 40px; border-radius: 50%; background: var(--teal); color: #fff; display: grid; place-items: center; font-size: 15px; font-weight: 500; }
-  .icon-btn { width: 40px; height: 40px; border-radius: 50%; background: #fff; border: 1px solid var(--line); color: var(--slate); font-size: 18px; }
-  .seg { display: flex; padding: 3px; border-radius: 999px; background: #fff; border: 1px solid var(--line); }
+  .icon-btn { width: 40px; height: 40px; border-radius: 50%; background: var(--surface); border: 1px solid var(--line); color: var(--slate); font-size: 18px; }
+  .seg { display: flex; padding: 3px; border-radius: 999px; background: var(--surface); border: 1px solid var(--line); }
   .seg button { font-size: 13px; padding: 6px 16px; border-radius: 999px; color: var(--slate); }
   .seg svg { display: block; width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linejoin: round; }
   .seg button.on { background: var(--deep); color: #fff; }
   .tabs { display: flex; align-items: center; gap: 4px; padding: 6px 0 10px 20px; }
   .new { width: 30px; height: 30px; flex: none; border-radius: 50%; background: var(--deep); color: #fff; font-size: 16px; line-height: 1; }
-  .new[aria-expanded="true"] { background: var(--ink); }
+  .new[aria-expanded="true"] { background: var(--cream); }
   .rooms { flex: 1; min-width: 0; display: flex; gap: 8px; overflow-x: auto; padding: 4px 20px 4px 4px; }
   .rooms::-webkit-scrollbar { display: none; }
   .rooms button {
     flex: none; white-space: nowrap; font-size: 13px; padding: 6px 14px; border-radius: 999px;
-    background: #fff; border: 1px solid var(--line); color: var(--slate); display: flex; align-items: center; gap: 6px;
+    background: var(--surface); border: 1px solid var(--line); color: var(--slate); display: flex; align-items: center; gap: 6px;
   }
   .rooms button.on { background: var(--deep); border-color: var(--deep); color: #fff; }
 
@@ -68,7 +71,7 @@
   .stack .av:first-child { margin-left: 0; }
 
   /* 작성 */
-  .sheet { border-bottom: 1px solid var(--line); background: #fff; }
+  .sheet { border-bottom: 1px solid var(--line); background: var(--surface); }
   .sheet textarea { display: block; width: 100%; padding: 14px 16px; min-height: 72px; }
   .sheet-row { display: flex; flex-wrap: wrap; border-top: 1px solid var(--line); }
   .sheet-row > * { height: 40px; border-right: 1px solid var(--line); font-size: 13px; color: var(--slate); }
@@ -81,9 +84,39 @@
   textarea, .now input {
     border: 0; outline: 0; resize: none; background: none; font: inherit; font-size: 15px; color: var(--ink); line-height: 1.5;
   }
-  .send { background: var(--ink); color: #fff; font-size: 14px; font-weight: 500; padding: 0 18px; }
+  .send { background: var(--ink); color: var(--paper); font-size: 14px; font-weight: 500; padding: 0 18px; }
 
-  /* 피드: 가로로 넘기는 사진 카드 (직사각형) */
+  /* 홈: 큰 대표 스토리 + 주제별 가로 줄 */
+  .hero {
+    position: relative; display: flex; flex-direction: column; justify-content: flex-end; gap: 8px;
+    width: 100%; aspect-ratio: 4 / 5; max-height: 520px; padding: 20px; text-align: left; color: #fff;
+    background-size: cover; background-position: center;
+  }
+  .hero .kicker { font-size: 12px; color: #ffffffcc; display: flex; align-items: center; gap: 6px; }
+  .hero h2 { font-size: 30px; font-weight: 700; line-height: 1.2; letter-spacing: -0.03em; text-wrap: balance; }
+  .hero .last { font-size: 14px; color: #ffffffd9; }
+  .hero-btns { display: flex; gap: 8px; margin-top: 6px; }
+  .hero-btns span { display: inline-flex; align-items: center; gap: 6px; height: 40px; padding: 0 18px; font-size: 14px; font-weight: 700; }
+  .hero-btns .primary { background: #fff; color: #111; }
+  .hero-btns .ghost2 { background: #ffffff2e; backdrop-filter: blur(8px); }
+  .row-hd { display: flex; align-items: baseline; gap: 8px; padding: 22px 16px 10px; }
+  .row-hd h3 { font-size: 17px; font-weight: 700; }
+  .row-hd span { font-size: 12px; color: var(--slate); }
+  .row-list { display: flex; gap: 8px; overflow-x: auto; padding: 0 16px; scroll-snap-type: x mandatory; scroll-padding-inline: 16px; }
+  .row-list::-webkit-scrollbar { display: none; }
+  .pcard {
+    position: relative; flex: none; width: 140px; aspect-ratio: 2 / 3; background-size: cover; background-position: center;
+    color: #fff; text-align: left; display: flex; flex-direction: column; justify-content: flex-end; padding: 10px; gap: 2px;
+    scroll-snap-align: start; text-shadow: 0 1px 3px #000a;
+  }
+  .pcard h4 { font-size: 14px; font-weight: 700; line-height: 1.3; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+  .pcard .meta { font-size: 11px; color: #ffffffcc; display: flex; align-items: center; gap: 4px; }
+  .pcard .badge { position: absolute; top: 0; left: 0; font-size: 11px; font-weight: 700; padding: 3px 7px; background: var(--deep); text-shadow: none; }
+  .pcard .badge.pin { background: #000a; }
+  .pcard .time-left { position: absolute; left: 0; right: 0; bottom: 0; height: 3px; background: #ffffff33; }
+  .pcard .time-left i { display: block; height: 100%; background: var(--teal); }
+  .home-empty { padding: 60px 24px; text-align: center; color: var(--slate); font-size: 14px; line-height: 1.6; }
+  /* (이전) 가로 사진 카드 */
   .rail { display: flex; gap: 10px; overflow-x: auto; padding: 4px 20px 8px; scroll-snap-type: x mandatory; scroll-padding-inline: 20px; }
   .rail::-webkit-scrollbar { display: none; }
   .tcard {
@@ -116,18 +149,18 @@
   .row .time { font-size: 11px; color: var(--slate); align-self: flex-start; }
 
   /* 지도 */
-  .map-wrap { position: relative; aspect-ratio: 4 / 5; max-width: 100%; background: #f6f1e8; border-bottom: 1px solid var(--line); overflow: hidden; }
+  .map-wrap { position: relative; aspect-ratio: 4 / 5; max-width: 100%; background: #15171a; border-bottom: 1px solid var(--line); overflow: hidden; }
   .map-wrap svg { position: absolute; inset: 0; width: 100%; height: 100%; }
   .map-wrap svg text { font-family: inherit; font-size: 3.2px; fill: var(--slate); }
   .mk { position: absolute; transform: translate(-50%, -50%); display: flex; align-items: center; gap: 0; text-align: left; }
-  .mk .ph { width: 46px; height: 46px; border-radius: 50%; border: 3px solid #fff; box-shadow: 0 3px 10px #0002; background-size: cover; background-position: center; flex: none; }
-  .mk .tag { display: flex; flex-direction: column; font-size: 11px; padding: 4px 8px; background: #fff; color: var(--ink); white-space: nowrap; max-width: 150px; border: 1px solid var(--line); border-radius: 12px; margin-left: 4px; }
+  .mk .ph { width: 46px; height: 46px; border-radius: 50%; border: 3px solid var(--ink); box-shadow: 0 3px 10px #0002; background-size: cover; background-position: center; flex: none; }
+  .mk .tag { display: flex; flex-direction: column; font-size: 11px; padding: 4px 8px; background: var(--surface); color: var(--ink); white-space: nowrap; max-width: 150px; border: 1px solid var(--line); border-radius: 12px; margin-left: 4px; }
   .mk .tag span { overflow: hidden; text-overflow: ellipsis; }
   .mk .song { color: var(--deep); font-size: 10px; }
   .mk .av { width: 32px; height: 32px; border: 2px solid #fff; box-sizing: content-box; box-shadow: 0 3px 8px #0002; }
-  .mk.me .tag { background: var(--mint); }
+  .mk.me .tag { background: var(--deep); }
   .mk.with .av { outline: 2px solid var(--deep); }
-  .now { display: flex; border-bottom: 1px solid var(--line); background: #fff; min-height: 44px; }
+  .now { display: flex; border-bottom: 1px solid var(--line); background: var(--surface); min-height: 44px; }
   .now input { flex: 1; min-width: 0; padding: 0 16px; font-size: 14px; }
   .now select { border-left: 1px solid var(--line); }
   .music-row { display: flex; align-items: center; gap: 10px; padding: 10px 16px; border-bottom: 1px solid var(--line); font-size: 13px; color: var(--slate); }
@@ -139,7 +172,7 @@
   .map-note { font-size: 11px; color: var(--slate); padding: 10px 16px 24px; }
 
   /* 같이 듣기 패널 */
-  .listen { position: absolute; left: 0; right: 0; bottom: 0; background: var(--ink); color: #fff; z-index: 5; animation: up .25s ease; }
+  .listen { position: absolute; left: 0; right: 0; bottom: 0; background: var(--surface); border-top: 1px solid var(--line); color: #fff; z-index: 5; animation: up .25s ease; }
   .listen .hd { display: flex; gap: 12px; padding: 14px 16px; align-items: center; }
   .cover { width: 56px; height: 56px; flex: none; }
   .listen .info { flex: 1; min-width: 0; }
@@ -150,7 +183,7 @@
   .bar i { display: block; height: 100%; background: var(--teal); }
   .times { display: flex; justify-content: space-between; font-size: 11px; color: #ffffff88; padding: 6px 16px 0; font-variant-numeric: tabular-nums; }
   .listen .ft { display: flex; align-items: center; gap: 8px; padding: 12px 16px 16px; font-size: 12px; color: #ffffffcc; }
-  .listen .join { margin-left: auto; height: 38px; padding: 0 18px; background: var(--mint); color: var(--ink); font-weight: 700; font-size: 13px; }
+  .listen .join { margin-left: auto; height: 38px; padding: 0 18px; background: var(--mint); color: var(--on-light); font-weight: 700; font-size: 13px; }
   .listen .join.on { background: transparent; color: #fff; border: 1px solid #ffffff55; }
   .listen .src { font-size: 10px; color: #ffffff66; padding: 0 16px 10px; }
 
@@ -167,12 +200,12 @@
   .t-head h1 { font-size: 24px; font-weight: 700; margin-top: 10px; line-height: 1.3; text-shadow: 0 1px 8px #0005; }
   .t-meta { display: flex; flex-wrap: wrap; gap: 2px; margin-top: 12px; }
   .t-meta > * { font-size: 12px; padding: 6px 10px; background: #0000004d; backdrop-filter: blur(8px); }
-  .t-meta button.on { background: #fff; color: var(--ink); }
+  .t-meta button.on { background: #fff; color: var(--on-light); }
   .ref { display: flex; align-items: center; gap: 8px; }
   .ref .thumb { width: 24px; height: 24px; }
   .replies { display: flex; flex-direction: column; gap: 2px; margin-top: auto; }
-  .reply { display: grid; grid-template-columns: 52px 1fr; background: #ffffffe6; color: var(--ink); backdrop-filter: blur(12px); animation: rise .3s ease both; }
-  .reply.me { background: #bfefe0eb; }
+  .reply { display: grid; grid-template-columns: 52px 1fr; background: #17191ce0; color: var(--ink); backdrop-filter: blur(12px); animation: rise .3s ease both; }
+  .reply.me { background: #2d5a50e6; }
   .reply .tm { font-size: 11px; color: var(--slate); padding: 12px 0 0 12px; font-variant-numeric: tabular-nums; }
   .reply .body { padding: 10px 14px 10px 0; min-width: 0; }
   .reply .who { font-size: 12px; color: var(--slate); display: flex; align-items: center; gap: 6px; }
@@ -180,7 +213,7 @@
   .reacts { display: flex; gap: 2px; margin-top: 6px; flex-wrap: wrap; }
   .react { font-size: 12px; padding: 2px 8px; background: #6b72801a; color: var(--slate); }
   .react.on { background: var(--deep); color: #fff; }
-  .thread footer { display: flex; background: #ffffffeb; backdrop-filter: blur(12px); min-height: 52px; border-top: 1px solid #ffffff55; }
+  .thread footer { display: flex; background: #17191ceb; backdrop-filter: blur(12px); min-height: 52px; border-top: 1px solid #ffffff55; }
   .thread footer textarea { flex: 1; padding: 14px 16px; max-height: 120px; }
 
   /* 내 홈 */
@@ -193,10 +226,10 @@
   .owners button.on { color: var(--ink); font-weight: 700; }
   .owners button.on .av { border-color: var(--deep); }
   .homes { display: flex; gap: 8px; overflow-x: auto; padding: 10px 20px 0; }
-  .homes button { flex: none; font-size: 13px; padding: 6px 14px; border-radius: 999px; background: #fff; border: 1px solid var(--line); color: var(--slate); }
-  .homes button.on { background: var(--ink); border-color: var(--ink); color: #fff; }
+  .homes button { flex: none; font-size: 13px; padding: 6px 14px; border-radius: 999px; background: var(--surface); border: 1px solid var(--line); color: var(--slate); }
+  .homes button.on { background: var(--ink); border-color: var(--ink); color: var(--paper); }
   .viewers { display: flex; align-items: center; flex-wrap: wrap; gap: 6px; padding: 10px 20px 12px; font-size: 12px; color: var(--slate); }
-  .viewers button { display: inline-flex; align-items: center; gap: 4px; padding: 3px 10px 3px 3px; border-radius: 999px; border: 1px solid var(--line); background: #fff; opacity: .55; }
+  .viewers button { display: inline-flex; align-items: center; gap: 4px; padding: 3px 10px 3px 3px; border-radius: 999px; border: 1px solid var(--line); background: var(--surface); opacity: .55; }
   .viewers button.on { opacity: 1; border-color: var(--deep); color: var(--ink); }
   /* 미니홈피 */
   .cy { display: flex; flex-direction: column; gap: 8px; padding: 12px; background: var(--paper); }
@@ -213,12 +246,12 @@
   .cy-room-hd { display: flex; align-items: baseline; justify-content: space-between; padding: 10px 14px 8px; }
   .cy-room-hd b { font-size: 13px; color: var(--deep); font-style: italic; }
   .cy-room-hd span { font-size: 11px; color: var(--slate); }
-  .skin-btn { font-size: 12px; padding: 5px 12px; border-radius: 999px; background: var(--ink); color: #fff; }
-  .board { position: relative; aspect-ratio: 1 / 1; max-width: 100%; overflow: hidden; touch-action: none; background: linear-gradient(#ffffff, #f4efe6); }
+  .skin-btn { font-size: 12px; padding: 5px 12px; border-radius: 999px; background: var(--ink); color: var(--paper); }
+  .board { position: relative; aspect-ratio: 1 / 1; max-width: 100%; overflow: hidden; touch-action: none; background: radial-gradient(circle at 50% 45%, #23262b, var(--paper) 75%); }
   .board canvas { display: block; width: 100%; height: 100%; }
   .item { position: absolute; transform: translate(-50%, -50%) rotate(var(--r)); user-select: none; }
   .item.mine-item { cursor: grab; }
-  .item.memo { width: 120px; padding: 10px 10px 8px; font-size: 13px; line-height: 1.45; color: var(--ink); box-shadow: 0 4px 10px #6b728026; }
+  .item.memo { width: 120px; padding: 10px 10px 8px; font-size: 13px; line-height: 1.45; color: var(--on-light); box-shadow: 0 4px 10px #6b728026; }
   .item.memo .by { display: flex; align-items: center; gap: 4px; font-size: 10px; color: var(--slate); margin-top: 6px; }
   .item.sticker { font-size: 42px; line-height: 1; filter: drop-shadow(0 3px 4px #0002); }
   .locked { padding: 60px 20px; text-align: center; color: var(--slate); font-size: 14px; }
@@ -267,18 +300,17 @@
       </div>
 
       <div id="feedView">
-        <div class="rail" id="hot"></div>
-        <div class="sec" id="pastSec"><h2>History</h2><span id="allCount"></span></div>
-        <div id="all"></div>
+        <div id="hero"></div>
+        <div id="rowsBox"></div>
       </div>
 
       <div id="mapView" hidden>
         <div class="map-wrap" id="map">
           <svg viewBox="0 0 100 125" preserveAspectRatio="none" aria-hidden="true">
-            <path d="M0 84 C 20 78, 35 94, 55 90 S 85 74, 100 78 L 100 90 C 85 86, 62 104, 45 103 S 15 94, 0 97 Z" fill="#BFEFE0"/>
-            <path d="M10 0 L 30 125 M 0 40 L 100 30 M 55 0 L 62 80 M 0 64 L 100 58 M 75 0 L 92 125" stroke="#D6C7B0" stroke-width=".6" fill="none"/>
-            <rect x="62" y="12" width="16" height="10" fill="#87CBB9" opacity=".3"/>
-            <rect x="10" y="74" width="12" height="4" fill="#87CBB9" opacity=".3"/>
+            <path d="M0 84 C 20 78, 35 94, 55 90 S 85 74, 100 78 L 100 90 C 85 86, 62 104, 45 103 S 15 94, 0 97 Z" fill="#2d5a50"/>
+            <path d="M10 0 L 30 125 M 0 40 L 100 30 M 55 0 L 62 80 M 0 64 L 100 58 M 75 0 L 92 125" stroke="#3a3e44" stroke-width=".6" fill="none"/>
+            <rect x="62" y="12" width="16" height="10" fill="#87CBB9" opacity=".12"/>
+            <rect x="10" y="74" width="12" height="4" fill="#87CBB9" opacity=".12"/>
           </svg>
         </div>
         <div class="now">
@@ -477,40 +509,50 @@
     const keep = isDm();
     const today = keep ? threads : threads.filter(fresh);
     const past = keep ? [] : threads.filter(t => !fresh(t) && t.keptBy);
-    document.getElementById("allCount").textContent = past.length;
-    document.getElementById("pastSec").hidden = keep;
-    document.getElementById("all").hidden = keep;
 
-    const grid = document.getElementById("hot");
-    grid.innerHTML = today.length ? "" : `<div class="empty">오늘 올라온 이야기가 없어요. ＋로 첫 이야기를 올려 보세요</div>`;
-    today.forEach(t => {
+    // 대표 스토리: 새 답장이 있는 것 > 가장 최근 것
+    const lead = today.find(t => t.unread) || today[0] || past[0];
+    const hero = document.getElementById("hero");
+    hero.innerHTML = "";
+    if (!lead) {
+      hero.innerHTML = `<div class="home-empty">아직 이야기가 없어요.<br>＋로 첫 사진이나 글을 올려 보세요</div>`;
+    } else {
       const b = document.createElement("button");
-      b.className = "tcard" + (t.photo ? "" : " text");
-      b.style.backgroundImage = `linear-gradient(#0006, #0000 28%, #0003 50%, #000c), ${bg(t)}`;
+      b.className = "hero";
+      b.style.backgroundImage = `linear-gradient(#0000 35%, var(--paper)), linear-gradient(#0007, #0000 25%), ${bg(lead)}`;
       b.innerHTML = `
-        <div class="who-row">${av(t.by)}
-          <div><b>${people[t.by].name}</b><span class="sub">${t.time}${t.place ? ` · ${esc(t.place)}` : ""}</span></div>
-          ${keep ? "" : `<span class="left">${hoursLeft(t)}시간 남음</span>`}</div>
-        <h3>${esc(t.title)}</h3>
-        <div class="last">${lastLine(t)}</div>
-        <div class="foot">${keep ? "<span></span>" : stack(t)}
-          ${t.keptBy && !keep ? `<span class="unread">📌</span>` : ""}
-          ${t.unread ? `<span class="unread"><i></i>새 답장 ${t.unread}</span>` : ""}<span class="plus">＋</span></div>`;
-      b.onclick = () => openThread(threads.indexOf(t));
-      grid.appendChild(b);
-    });
+        <div class="kicker">${av(lead.by, "s")}${people[lead.by].name}${lead.place ? ` · ${esc(lead.place)}` : ""} · ${keep || !fresh(lead) ? lead.time : `${hoursLeft(lead)}시간 남음`}</div>
+        <h2>${esc(lead.title)}</h2>
+        <div class="last">${lastLine(lead)}</div>
+        <div class="hero-btns"><span class="primary">💬 답장하기</span>
+          ${lead.unread ? `<span class="ghost2">새 답장 ${lead.unread}</span>` : `<span class="ghost2">답장 ${lead.replies.length}</span>`}</div>`;
+      b.onclick = () => openThread(threads.indexOf(lead));
+      hero.appendChild(b);
+    }
 
-    const list = document.getElementById("all");
-    list.innerHTML = past.length ? "" : `<div class="empty">누군가 보관한 이야기만 24시간 뒤에도 여기 남아요</div>`;
-    past.forEach(t => {
-      const b = document.createElement("button");
-      b.className = "row";
-      b.innerHTML = `<span class="thumb" style="background-image:${bg(t)}"></span>
-        <div class="mid"><h4>${esc(t.title)}</h4><div class="last">${lastLine(t)}</div>
-          <div class="pin">📌 ${subj(t.keptBy)} 보관함</div></div>
-        <span class="time">${t.time}</span>`;
-      b.onclick = () => openThread(threads.indexOf(t));
-      list.appendChild(b);
+    // 주제별 가로 줄
+    const rows = keep
+      ? [["이야기", today]]
+      : [["새 답장이 왔어요", today.filter(t => t.unread)], ["오늘의 이야기", today], ["History", past]];
+    const box = document.getElementById("rowsBox");
+    box.innerHTML = "";
+    rows.filter(([, list]) => list.length).forEach(([name, list]) => {
+      const sec = document.createElement("section");
+      sec.innerHTML = `<div class="row-hd"><h3>${name}</h3><span>${list.length}</span></div><div class="row-list"></div>`;
+      list.forEach(t => {
+        const b = document.createElement("button");
+        b.className = "pcard";
+        b.style.backgroundImage = `linear-gradient(#0000 45%, #000c), ${bg(t)}`;
+        const left = !keep && fresh(t) ? Math.max(0, 1 - (Date.now() - t.at) / (24 * H)) : null;
+        b.innerHTML = `
+          ${t.unread ? `<span class="badge">새 답장 ${t.unread}</span>` : t.keptBy && !keep ? `<span class="badge pin">📌 보관</span>` : ""}
+          <h4>${esc(t.title)}</h4>
+          <div class="meta">${people[t.by].name} · ${t.time}</div>
+          ${left !== null ? `<span class="time-left"><i style="width:${left * 100}%"></i></span>` : ""}`;
+        b.onclick = () => openThread(threads.indexOf(t));
+        sec.querySelector(".row-list").appendChild(b);
+      });
+      box.appendChild(sec);
     });
     renderMap();
   }
