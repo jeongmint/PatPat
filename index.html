@@ -67,6 +67,28 @@
     font-size: 10px; font-weight: 500; color: #fff; flex: none;
   }
   .av.s { width: 20px; height: 20px; font-size: 10px; }
+  .av { overflow: hidden; }
+  .av img { width: 100%; height: 100%; object-fit: cover; transform: translateY(8%) scale(1.08); }
+  /* 캐릭터: 앞모습 그림 + 배에 사진 */
+  .char { position: relative; display: inline-block; flex: none; }
+  .char img { display: block; width: 100%; height: auto; }
+  .char .belly { position: absolute; border-radius: 50%; background-size: cover; background-position: center; box-shadow: inset 0 0 0 2px #0000002e; }
+  .birth { position: absolute; inset: 0; z-index: 25; background: #000000d9; display: grid; place-items: center; padding: 24px; animation: fade .25s ease; }
+  .birth-card { display: flex; flex-direction: column; align-items: center; gap: 10px; text-align: center; }
+  .birth-k { font-size: 11px; color: var(--teal); letter-spacing: .08em; }
+  .birth-card .char { width: 180px; animation: hatch .9s cubic-bezier(.2,1.6,.4,1) both; }
+  .birth-card b { font-size: 18px; }
+  .birth-card span.sub { font-size: 11px; color: var(--slate); }
+  .birth-card button { margin-top: 8px; height: 42px; padding: 0 28px; border-radius: 999px; background: var(--ink); color: var(--paper); font-weight: 700; font-size: 12px; }
+  .dex-wrap { padding: 6px 6px 2px; }
+  .dex-wrap h3 { font-size: 11px; color: var(--slate); font-weight: 500; letter-spacing: .04em; margin-bottom: 8px; }
+  .dex { display: flex; gap: 12px; overflow-x: auto; padding-bottom: 4px; }
+  .dex::-webkit-scrollbar { display: none; }
+  .dex .cell { flex: none; width: 76px; display: flex; flex-direction: column; align-items: center; gap: 4px; font-size: 10px; color: var(--slate); text-align: center; }
+  .dex .cell span { width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .dex .none { font-size: 11px; color: var(--slate); padding: 10px 0; }
+  @keyframes hatch { 0% { transform: scale(.2) rotate(-12deg); opacity: 0; } 100% { transform: none; opacity: 1; } }
+  @keyframes fade { from { opacity: 0; } }
   .stack { display: flex; }
   .stack .av { margin-left: -6px; border: 2px solid #fff6; box-sizing: content-box; }
   .stack .av:first-child { margin-left: 0; }
@@ -250,7 +272,7 @@
   /* 미니홈피 */
   .cy { display: flex; flex-direction: column; gap: 8px; padding: 12px; background: var(--paper); }
   .cy-profile { display: flex; align-items: center; gap: 16px; padding: 8px 6px 4px; }
-  .cy-pic { width: 76px; height: 76px; flex: none; border-radius: 50%; display: grid; place-items: center; font-size: 24px; color: #fff; }
+  .cy-pic { width: 84px; flex: none; }
   .cy-info { min-width: 0; display: flex; flex-direction: column; gap: 2px; }
   .cy-info strong { font-size: 16px; letter-spacing: -0.03em; }
   .cy-info p { font-size: 11px; color: var(--slate); }
@@ -449,6 +471,15 @@
     <button class="logout" id="logout">로그아웃</button>
   </div>
   <div class="toast" id="toast" hidden></div>
+  <div class="birth" id="birth" hidden>
+    <div class="birth-card">
+      <p class="birth-k">새 캐릭터가 태어났어요</p>
+      <div id="birthChar"></div>
+      <b id="birthName"></b>
+      <span class="sub" id="birthFrom"></span>
+      <button id="birthOk">좋아요</button>
+    </div>
+  </div>
 
   <section class="view mine" id="mineView">
     <div class="top">
@@ -471,6 +502,7 @@
           </div>
         </div>
         <div class="cy-stats" id="cyStats"></div>
+        <div class="dex-wrap"><h3>도감 · 사진에서 태어난 캐릭터</h3><div class="dex" id="dex"></div></div>
         <div class="cy-box" id="cyRoom">
           <div class="cy-room-hd"><b>Mini Room</b><span id="roomNote">방명록 메모 · 스티커</span>
             <span class="hd-btns"><button class="skin-btn ghost3" id="camBtn">뮤직캠</button>
@@ -611,7 +643,36 @@
   const fresh = t => Date.now() - t.at < 24 * H;
   const hoursLeft = t => Math.max(1, Math.ceil(24 - (Date.now() - t.at) / H));
   const esc = s => s.replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
-  const av = (id, cls = "") => `<span class="av ${cls}" style="background:${people[id].color}">${people[id].name[0]}</span>`;
+  // 캐릭터 두 종. belly = 앞모습 그림에서 배 동그라미의 중심·크기(%)
+  const species = {
+    horse: { name: "구름말", src: "assets/chars/horse.png", face: "assets/chars/horse-face.png", belly: { x: 50.1, y: 77.7, w: 31.5, h: 21.2 } },
+    dino: { name: "뿔룡", src: "assets/chars/dino.png", face: "assets/chars/dino-face.png", belly: { x: 50.5, y: 82.3, w: 24.8, h: 26.6 } },
+  };
+  const hashStr = str => [...String(str)].reduce((h, c) => (h * 31 + c.charCodeAt(0)) | 0, 7);
+  // 사진마다 어떤 캐릭터가 태어날지 정해짐
+  const speciesFor = seed => Math.abs(hashStr(seed)) % 2 ? "dino" : "horse";
+  const photoThreads = id => rooms.flatMap(r => r.threads || []).filter(t => t.by === id && t.photo).sort((a, b) => b.at - a.at);
+  // 사람의 대표 캐릭터 = 가장 최근 사진에서 태어난 캐릭터 (직접 고른 사진이 있으면 그걸 배에)
+  function personChar(id) {
+    const t = photoThreads(id)[0];
+    const picked = skins[id];
+    return { sp: t ? speciesFor(t.id || t.title) : speciesFor(id), photo: picked ? `url(${picked})` : t ? t.photo : null };
+  }
+  const charHTML = (sp, photo, width) => {
+    const k = species[sp], b = k.belly;
+    return `<span class="char" style="width:${width}px"><img src="${k.src}" alt="${k.name}">${photo
+      ? `<i class="belly" style="left:${b.x - b.w / 2}%;top:${b.y - b.h / 2}%;width:${b.w}%;height:${b.h}%;background-image:${photo}"></i>` : ""}</span>`;
+  };
+  const av = (id, cls = "") => `<span class="av ${cls}" style="background:${people[id].color}" title="${esc(people[id].name)}"><img src="${species[personChar(id).sp].face}" alt=""></span>`;
+
+  function showBirth(t) {
+    const sp = speciesFor(t.id || t.title);
+    document.getElementById("birthChar").innerHTML = charHTML(sp, t.photo, 180);
+    document.getElementById("birthName").textContent = species[sp].name;
+    document.getElementById("birthFrom").textContent = `"${t.title}" 사진에서 태어났어요`;
+    document.getElementById("birth").hidden = false;
+  }
+  document.getElementById("birthOk").onclick = () => { document.getElementById("birth").hidden = true; };
   const stack = t => {
     const ids = [...new Set([t.by, ...t.replies.map(r => r.by)])];
     return `<span class="stack">${ids.slice(0, 3).map(id => av(id, "s")).join("")}</span>`;
@@ -982,7 +1043,9 @@
       document.getElementById("place").value = "";
       toggleSheet(false);
       await api.loadRooms(rooms[room].id);
-      openThread(threads.findIndex(x => x.id === created.id));
+      const i = threads.findIndex(x => x.id === created.id);
+      openThread(i);
+      if (threads[i].photo) showBirth(threads[i]);
       return;
     }
     threads.unshift({ by: "me", at: Date.now(), time: now(), title: title || "새 사진", unread: 0,
@@ -997,6 +1060,7 @@
     toggleSheet(false);
     renderHome();
     openThread(0);
+    if (threads[0].photo) showBirth(threads[0]);
   };
 
   // 내 홈: 여러 개의 홈, 홈마다 볼 수 있는 사람을 고름. 방문자는 메모·스티커를 붙이고 감
@@ -1099,9 +1163,12 @@
     home.total = home.total || home.today * 37;
     const memos = home.items.filter(i => i.type === "memo").length;
     const photos = rooms.flatMap(r => r.threads).filter(t => t.by === owner && t.photo).length;
-    const pic = document.getElementById("cyPic");
-    pic.style.background = people[owner].color;
-    pic.textContent = people[owner].name[0];
+    const pc = personChar(owner);
+    document.getElementById("cyPic").innerHTML = charHTML(pc.sp, pc.photo, 84);
+    const dexList = photoThreads(owner);
+    document.getElementById("dex").innerHTML = dexList.length
+      ? dexList.map(t => `<div class="cell">${charHTML(speciesFor(t.id || t.title), t.photo, 64)}<span>${esc(t.title)}</span></div>`).join("")
+      : `<p class="none">사진을 올리면 캐릭터가 태어나요</p>`;
     document.getElementById("cyToday").innerHTML = `오늘 <b>${home.today}</b> · 전체 ${home.total}`;
     document.getElementById("cyName").textContent = people[owner].name;
     document.getElementById("cyBio").textContent = home.bio || "소개가 아직 없어요";
@@ -1143,16 +1210,13 @@
     const leaf = new T.Mesh(new T.IcosahedronGeometry(0.45, 0), flat(0x87cbb9));
     leaf.position.set(-2.4, 0.75, -2.4); scene.add(leaf);
 
-    // 캐릭터: 둥근 로우폴리 몸 + 눈 + 볼 + 더듬이
+    // 캐릭터: 앞모습 그림을 늘 카메라를 보는 판(스프라이트)으로 세움. 3D 모델이 생기면 이 자리를 교체
     const hero = new T.Group();
-    const body = new T.Mesh(new T.SphereGeometry(0.55, 10, 7), flat(0x87cbb9));
-    body.scale.set(1, 1.1, 0.95); body.position.y = 0.6; hero.add(body);
-    const dot = (r, c, x, y, z) => { const m = new T.Mesh(new T.SphereGeometry(r, 6, 4), flat(c)); m.position.set(x, y, z); hero.add(m); return m; };
-    dot(0.07, 0x2f3440, -0.17, 0.72, 0.5); dot(0.07, 0x2f3440, 0.17, 0.72, 0.5);
-    dot(0.08, 0xf0a58a, -0.3, 0.58, 0.44); dot(0.08, 0xf0a58a, 0.3, 0.58, 0.44);
-    const tip = dot(0.1, 0x4f9a87, 0, 1.45, 0);
-    const stem = new T.Mesh(new T.CylinderGeometry(0.025, 0.025, 0.35, 5), flat(0x4f9a87));
-    stem.position.y = 1.25; hero.add(stem);
+    const sprite = new T.Sprite(new T.SpriteMaterial({ transparent: true }));
+    sprite.center.set(0.5, 0);
+    hero.add(sprite);
+    const HERO_H = 1.9;
+    let heroW = 1.3;
     const shadow = new T.Mesh(new T.CircleGeometry(0.5, 12), new T.MeshBasicMaterial({ color: 0x000000, transparent: true, opacity: 0.12 }));
     shadow.rotation.x = -Math.PI / 2; shadow.position.y = 0.01;
     scene.add(shadow, hero);
@@ -1203,25 +1267,30 @@
       resize();
     }
 
-    // 사진을 몸 텍스처로 씌움. 직접 고른 사진 > 최근 올린 사진 > 프로필 색
-    const loader = new T.TextureLoader();
-    function skinFor(ownerId) {
-      if (skins[ownerId]) return skins[ownerId];
-      const t = rooms.flatMap(r => r.threads).find(t => t.by === ownerId && /^url\(/.test(t.photo || ""));
-      return t ? t.photo.slice(4, -1) : null;
-    }
-    function applySkin(ownerId) {
-      body.material.map = null;
-      body.material.color.set(people[ownerId].color);
-      body.material.needsUpdate = true;
-      const url = skinFor(ownerId);
-      if (!url) return;
-      loader.load(url, tex => {
-        if (ownerId !== owner) return; // 그새 다른 홈으로 이동함
-        body.material.map = tex;
-        body.material.color.set(0xffffff);
-        body.material.needsUpdate = true;
-      });
+    // 그 사람의 캐릭터 그림에 사진을 배 동그라미 모양으로 오려 붙여 텍스처로 만듦
+    const loadImg = src => new Promise((ok, no) => { const i = new Image(); i.onload = () => ok(i); i.onerror = no; i.src = src; });
+    async function applySkin(ownerId) {
+      const pc = personChar(ownerId), k = species[pc.sp];
+      const base = await loadImg(k.src);
+      const c = document.createElement("canvas"); c.width = base.width; c.height = base.height;
+      const g = c.getContext("2d");
+      g.drawImage(base, 0, 0);
+      const photo = pc.photo && pc.photo.match(/^url\((.*)\)$/);
+      if (photo) {
+        try {
+          const img = await loadImg(photo[1]);
+          const b = k.belly, cx = b.x / 100 * c.width, cy = b.y / 100 * c.height, rx = b.w / 200 * c.width, ry = b.h / 200 * c.height;
+          const sc = Math.max(rx * 2 / img.width, ry * 2 / img.height);
+          g.save(); g.beginPath(); g.ellipse(cx, cy, rx, ry, 0, 0, Math.PI * 2); g.clip();
+          g.drawImage(img, cx - img.width * sc / 2, cy - img.height * sc / 2, img.width * sc, img.height * sc);
+          g.restore();
+        } catch (e) { /* 사진을 못 읽으면 그림 그대로 */ }
+      }
+      if (ownerId !== owner) return; // 그새 다른 홈으로 이동함
+      sprite.material.map = new T.CanvasTexture(c);
+      sprite.material.needsUpdate = true;
+      heroW = HERO_H * c.width / c.height;
+      sprite.scale.set(heroW, HERO_H, 1);
     }
 
     function resize() {
@@ -1242,18 +1311,16 @@
       raf = requestAnimationFrame(loop);
       const dir = target.clone().sub(hero.position); dir.y = 0;
       if (dir.length() < 0.05) {
-        // 멈춰 있을 땐 카메라 쪽을 봄
-        hero.rotation.y += (Math.PI / 4 - hero.rotation.y) * 0.05;
         if (Math.random() < 0.006) pickTarget();
       }
       else {
         hero.position.addScaledVector(dir.normalize(), 0.012);
-        hero.rotation.y += (Math.atan2(dir.x, dir.z) - hero.rotation.y) * 0.08;
+        // 화면 왼쪽으로 걸을 땐 좌우 반전
+        sprite.scale.x = (dir.x - dir.z < 0 ? -1 : 1) * heroW;
       }
       const bob = Math.abs(Math.sin(t / (180 - energy * 90))) * (0.06 + energy * 0.35);
       if (jumpT > 0) jumpT -= 0.03;
       hero.position.y = bob + Math.sin(Math.max(0, jumpT) * Math.PI) * 0.8;
-      tip.position.x = Math.sin(t / 300) * 0.06;
       shadow.position.set(hero.position.x, 0.01, hero.position.z);
       renderer.render(scene, cam);
     }
