@@ -262,6 +262,28 @@
   .cy-room-hd { display: flex; align-items: baseline; justify-content: space-between; padding: 10px 14px 8px; }
   .cy-room-hd b { font-size: 11px; color: var(--deep); font-style: italic; }
   .cy-room-hd span { font-size: 10px; color: var(--slate); }
+  .hd-btns { display: flex; gap: 6px; }
+  .skin-btn.ghost3 { background: var(--deep); color: #fff; }
+  /* 뮤직캠 */
+  .cam { position: absolute; left: 0; right: 0; bottom: 0; z-index: 6; background: var(--surface); border-top: 1px solid var(--line); padding: 14px 16px 18px; display: flex; flex-direction: column; gap: 12px; animation: up .25s ease; }
+  .cam-hd { display: flex; align-items: center; gap: 12px; }
+  .cam-view { position: relative; width: 96px; height: 72px; flex: none; background: #000; overflow: hidden; touch-action: none; }
+  .cam-view video { width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1); }
+  .cam-view .pad { position: absolute; inset: 0; display: grid; place-items: center; text-align: center; font-size: 10px; color: var(--slate); padding: 6px; background: repeating-linear-gradient(45deg, #1d2024 0 8px, #22252a 8px 16px); }
+  .cam-info { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 4px; }
+  .cam-info b { font-size: 13px; }
+  .cam-info span { font-size: 10px; color: var(--slate); font-variant-numeric: tabular-nums; }
+  .cam-x { width: 32px; height: 32px; color: var(--slate); font-size: 16px; align-self: flex-start; }
+  .meter { height: 4px; background: var(--cream); }
+  .meter i { display: block; height: 100%; background: var(--teal); transition: width .15s; }
+  .levels { display: flex; gap: 6px; }
+  .levels span { flex: 1; text-align: center; font-size: 10px; font-weight: 700; letter-spacing: .06em; padding: 7px 0; border-radius: 999px; background: var(--cream); color: var(--slate); border: 1px solid transparent; }
+  .levels span.on { background: var(--teal); color: var(--on-light); }
+  .levels span.next { border-color: var(--teal); color: var(--ink); }
+  .bars8 { display: flex; gap: 3px; }
+  .bars8 i { flex: 1; height: 3px; background: var(--cream); }
+  .bars8 i.on { background: var(--ink); }
+  .cam-play { height: 40px; border-radius: 999px; background: var(--ink); color: var(--paper); font-weight: 700; font-size: 12px; }
   .skin-btn { font-size: 10px; padding: 5px 12px; border-radius: 999px; background: var(--ink); color: var(--paper); }
   .board { position: relative; aspect-ratio: 1 / 1; max-width: 100%; overflow: hidden; touch-action: none; background: radial-gradient(circle at 50% 45%, #23262b, var(--paper) 75%); }
   .board canvas { display: block; width: 100%; height: 100%; }
@@ -395,7 +417,8 @@
         <div class="cy-stats" id="cyStats"></div>
         <div class="cy-box" id="cyRoom">
           <div class="cy-room-hd"><b>Mini Room</b><span id="roomNote">방명록 메모 · 스티커</span>
-            <button class="skin-btn" id="skinBtn">사진으로 옷 입히기</button>
+            <span class="hd-btns"><button class="skin-btn ghost3" id="camBtn">뮤직캠</button>
+            <button class="skin-btn" id="skinBtn">사진으로 옷 입히기</button></span>
             <input type="file" id="skinFile" accept="image/*" capture="environment" hidden></div>
           <div class="board" id="board"></div>
           <div class="tools" id="tools">
@@ -411,6 +434,24 @@
       </div>
       <div class="locked" id="locked" hidden></div>
       <p class="hint">내가 붙인 메모와 스티커는 끌어서 옮길 수 있어요. 캐릭터를 누르면 점프해요.</p>
+    </div>
+
+    <div class="cam" id="cam" hidden>
+      <div class="cam-hd">
+        <div class="cam-view" id="camView">
+          <video id="camVideo" playsinline muted></video>
+          <div class="pad" id="camPad" hidden>카메라 대신<br>여기를 문질러<br>움직임을 흉내 내요</div>
+        </div>
+        <div class="cam-info">
+          <b id="camChord">Cmaj7</b>
+          <span id="camStatus">92 BPM · 4/4 · 8마디</span>
+          <div class="meter"><i id="camMeter" style="width:0"></i></div>
+        </div>
+        <button class="cam-x" id="camClose" aria-label="닫기">×</button>
+      </div>
+      <div class="levels" id="camLevels"><span data-l="0">LOW</span><span data-l="1">MID</span><span data-l="2">HIGH</span></div>
+      <div class="bars8" id="camBars"></div>
+      <button class="cam-play" id="camPlay">시작</button>
     </div>
   </section>
 </div>
@@ -957,13 +998,14 @@
       <span><b>${home.viewers.length}</b>일촌</span><span><b>${photos}</b>사진첩</span>
       <span><b>${memos}</b>방명록</span><span><b>${home.items.length - memos}</b>스티커</span>`;
     document.getElementById("skinBtn").hidden = !mine;
+    document.getElementById("camBtn").hidden = !mine;
     document.getElementById("roomNote").hidden = mine;
     room3d.show(home, owner);
   }
 
   // 3D 미니룸: 벽 두 면 + 바닥. 메모는 뒷벽에, 스티커는 바닥에, 캐릭터는 방 안을 돌아다님
   const room3d = (() => {
-    if (!window.THREE) return { show() {}, applySkin() {}, start() {}, stop() {} };
+    if (!window.THREE) return { show() {}, applySkin() {}, start() {}, stop() {}, setEnergy() {}, kick() {} };
     const T = THREE, board = document.getElementById("board");
     const renderer = new T.WebGLRenderer({ antialias: true, alpha: true });
     renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
@@ -1082,7 +1124,7 @@
     new ResizeObserver(resize).observe(board);
 
     // 돌아다니기 + 점프
-    let target = new T.Vector3(), jumpT = 0, raf = null;
+    let target = new T.Vector3(), jumpT = 0, raf = null, energy = 0;
     const pickTarget = () => target.set(-2 + Math.random() * 4, 0, -1.6 + Math.random() * 3.6);
     pickTarget();
     function loop(t) {
@@ -1097,7 +1139,7 @@
         hero.position.addScaledVector(dir.normalize(), 0.012);
         hero.rotation.y += (Math.atan2(dir.x, dir.z) - hero.rotation.y) * 0.08;
       }
-      const bob = Math.abs(Math.sin(t / 180)) * 0.06;
+      const bob = Math.abs(Math.sin(t / (180 - energy * 90))) * (0.06 + energy * 0.35);
       if (jumpT > 0) jumpT -= 0.03;
       hero.position.y = bob + Math.sin(Math.max(0, jumpT) * Math.PI) * 0.8;
       tip.position.x = Math.sin(t / 300) * 0.06;
@@ -1144,6 +1186,8 @@
       show,
       applySkin,
       start() { if (!raf) raf = requestAnimationFrame(loop); },
+      setEnergy(e) { energy = e; },
+      kick() { if (energy > 0.5 && jumpT <= 0) jumpT = 0.5; },
       stop() { cancelAnimationFrame(raf); raf = null; },
     };
   })();
@@ -1193,7 +1237,160 @@
     skinFile.value = "";
     room3d.applySkin("me");
   };
-  document.getElementById("mineBack").onclick = () => { app.classList.remove("mine-open"); room3d.stop(); };
+  document.getElementById("mineBack").onclick = () => { app.classList.remove("mine-open"); room3d.stop(); musicCam.close(); };
+
+  // 뮤직캠: 카메라로 움직임 양을 재서 LOW·MID·HIGH 패턴을 고르고, 바꾸는 건 다음 마디에서.
+  // 소리는 아직 샘플 대신 Web Audio로 합성 (92 BPM, 4/4, 8마디, Cmaj7 - G/B - Am7 - Fmaj7)
+  const musicCam = (() => {
+    const BPM = 92, STEP = 60 / BPM / 4, STEPS = 16, BARS = 8;
+    const chords = [
+      { name: "Cmaj7", notes: [60, 64, 67, 71], bass: 36 },
+      { name: "G/B", notes: [59, 62, 67, 74], bass: 35 },
+      { name: "Am7", notes: [57, 60, 64, 67], bass: 33 },
+      { name: "Fmaj7", notes: [53, 57, 60, 64], bass: 29 },
+    ];
+    // 마디 안 16분음표 위치. 세 패턴은 코드 진행·마디 수가 같고 밀도만 다름
+    const patterns = [
+      { kick: [0], snare: [], hat: [8], bass: [0], piano: "pad" },
+      { kick: [0, 6, 8], snare: [4, 12], hat: [0, 2, 4, 6, 8, 10, 12, 14], bass: [0, 6, 8], piano: "stab" },
+      { kick: [0, 3, 8, 10], snare: [4, 12, 15], hat: [...Array(16).keys()], bass: [0, 3, 6, 8, 11, 14], piano: "arp" },
+    ];
+    const $ = id => document.getElementById(id);
+    let ctx, noise, timer, step = 0, bar = 0, nextTime = 0, level = 1, pending = 1, playing = false;
+    let motion = 0, stream = null, frameReq = null, prev = null;
+    $("camBars").innerHTML = "<i></i>".repeat(BARS);
+
+    const freq = n => 440 * 2 ** ((n - 69) / 12);
+    function env(t, peak, dur) {
+      const g = ctx.createGain();
+      g.gain.setValueAtTime(0.0001, t);
+      g.gain.exponentialRampToValueAtTime(peak, t + 0.005);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+      g.connect(ctx.destination);
+      return g;
+    }
+    function tone(type, f, t, peak, dur) {
+      const o = ctx.createOscillator(); o.type = type; o.frequency.value = f;
+      o.connect(env(t, peak, dur)); o.start(t); o.stop(t + dur + 0.05);
+    }
+    function kick(t) {
+      const o = ctx.createOscillator();
+      o.frequency.setValueAtTime(150, t); o.frequency.exponentialRampToValueAtTime(40, t + 0.15);
+      o.connect(env(t, 0.9, 0.3)); o.start(t); o.stop(t + 0.35);
+    }
+    function hiss(t, cutoff, peak, dur) {
+      const src = ctx.createBufferSource(); src.buffer = noise;
+      const f = ctx.createBiquadFilter(); f.type = "highpass"; f.frequency.value = cutoff;
+      src.connect(f); f.connect(env(t, peak, dur)); src.start(t); src.stop(t + dur + 0.05);
+    }
+
+    function schedule(s, t) {
+      if (s === 0) level = pending; // 패턴 전환은 마디 경계에서만
+      const p = patterns[level], c = chords[Math.floor(bar / 2) % 4];
+      if (p.kick.includes(s)) kick(t);
+      if (p.snare.includes(s)) hiss(t, 1500, s === 15 ? 0.08 : 0.25, 0.18);
+      if (p.hat.includes(s)) hiss(t, 7000, s % 4 === 0 ? 0.08 : 0.04, 0.05);
+      if (p.bass.includes(s)) tone("triangle", freq(c.bass + 12), t, 0.35, STEP * 2.5);
+      if (p.piano === "pad" && s === 0 && bar % 2 === 0) c.notes.forEach(n => tone("sine", freq(n), t, 0.06, STEP * 30));
+      if (p.piano === "stab" && (s === 0 || s === 10)) c.notes.forEach(n => tone("triangle", freq(n), t, 0.05, STEP * 3));
+      if (p.piano === "arp" && s % 2 === 0) tone("triangle", freq(c.notes[(s / 2) % 4] + 12), t, 0.06, STEP * 2);
+      // 화면 갱신은 그 박자가 실제로 들릴 때
+      const delay = Math.max(0, (t - ctx.currentTime) * 1000);
+      const b = bar;
+      setTimeout(() => {
+        if (s === 0) draw(b, c);
+        if (p.kick.includes(s)) room3d.kick();
+      }, delay);
+    }
+    function tick() {
+      while (nextTime < ctx.currentTime + 0.12) {
+        schedule(step, nextTime);
+        nextTime += STEP;
+        step = (step + 1) % STEPS;
+        if (step === 0) bar = (bar + 1) % BARS;
+      }
+    }
+    function draw(b, c) {
+      $("camChord").textContent = c.name;
+      [...$("camBars").children].forEach((el, i) => el.classList.toggle("on", i <= b));
+      [...$("camLevels").children].forEach((el, i) => {
+        el.classList.toggle("on", i === level);
+        el.classList.toggle("next", i === pending && pending !== level);
+      });
+      $("camStatus").textContent = `92 BPM · ${b + 1} / ${BARS} 마디`;
+    }
+
+    // 움직임 양: 작은 화면을 프레임끼리 비교한 평균 차이를 부드럽게
+    function setMotion(v) {
+      motion = motion * 0.85 + v * 0.15;
+      $("camMeter").style.width = Math.min(100, motion * 250) + "%";
+      pending = motion < 0.08 ? 0 : motion < 0.22 ? 1 : 2;
+      room3d.setEnergy(playing ? [0.1, 0.45, 1][level] : 0);
+      if (playing) [...$("camLevels").children].forEach((el, i) => el.classList.toggle("next", i === pending && pending !== level));
+    }
+    async function startCamera() {
+      const video = $("camVideo"), cv = document.createElement("canvas");
+      cv.width = 32; cv.height = 24;
+      const g = cv.getContext("2d", { willReadFrequently: true });
+      try {
+        stream = await navigator.mediaDevices.getUserMedia({ video: { width: 160, height: 120 } });
+        video.srcObject = stream; await video.play();
+        $("camPad").hidden = true;
+        const loop = () => {
+          g.drawImage(video, 0, 0, 32, 24);
+          const d = g.getImageData(0, 0, 32, 24).data;
+          if (prev) {
+            let sum = 0;
+            for (let i = 0; i < d.length; i += 4) sum += Math.abs(d[i] - prev[i]) + Math.abs(d[i + 1] - prev[i + 1]);
+            setMotion(sum / (d.length / 4) / 255);
+          }
+          prev = d.slice();
+          frameReq = requestAnimationFrame(loop);
+        };
+        loop();
+      } catch (e) {
+        // 카메라를 못 쓰면 패드를 문질러서 움직임을 흉내 냄
+        $("camPad").hidden = false;
+        let last = 0, px = null, py = null;
+        $("camView").onpointermove = ev => {
+          if (px !== null) last = Math.min(1, last + Math.hypot(ev.clientX - px, ev.clientY - py) / 120);
+          px = ev.clientX; py = ev.clientY;
+        };
+        const decay = () => { setMotion(last); last *= 0.9; frameReq = requestAnimationFrame(decay); };
+        decay();
+      }
+    }
+    function stopCamera() {
+      cancelAnimationFrame(frameReq);
+      if (stream) stream.getTracks().forEach(t => t.stop());
+      stream = null; prev = null;
+    }
+
+    function play() {
+      ctx = ctx || new (window.AudioContext || window.webkitAudioContext)();
+      ctx.resume();
+      if (!noise) {
+        noise = ctx.createBuffer(1, ctx.sampleRate, ctx.sampleRate);
+        const d = noise.getChannelData(0);
+        for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
+      }
+      step = 0; bar = 0; level = pending; nextTime = ctx.currentTime + 0.05;
+      timer = setInterval(tick, 25);
+      playing = true;
+      $("camPlay").textContent = "멈춤";
+    }
+    function pause() {
+      clearInterval(timer); playing = false;
+      room3d.setEnergy(0);
+      $("camPlay").textContent = "시작";
+    }
+    $("camPlay").onclick = () => playing ? pause() : play();
+    function open() { $("cam").hidden = false; draw(0, chords[0]); startCamera(); }
+    function close() { pause(); stopCamera(); $("cam").hidden = true; }
+    $("camBtn").onclick = () => $("cam").hidden ? open() : close();
+    $("camClose").onclick = close;
+    return { close };
+  })();
 
   renderHome();
 </script>
