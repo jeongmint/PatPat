@@ -304,6 +304,33 @@
   .memo-form .colors button.on { border-color: var(--ink); }
   .hint { font-size: 10px; color: var(--slate); padding: 10px 20px 24px; }
 
+  /* 로그인 · 친구 패널 */
+  .auth { position: absolute; inset: 0; z-index: 20; background: var(--paper); display: grid; place-items: center; padding: 24px; }
+  .auth-box { width: 100%; max-width: 320px; display: flex; flex-direction: column; gap: 10px; }
+  .auth-box h1 { font-size: 30px; letter-spacing: -0.04em; }
+  .auth-box > p { color: var(--slate); font-size: 12px; margin-bottom: 12px; }
+  .auth-box input, .find input { height: 44px; padding: 0 14px; border-radius: 12px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); font: inherit; outline: 0; }
+  .auth-box input:focus, .find input:focus { border-color: var(--teal); }
+  .auth-err { color: #ff6b6b; font-size: 11px; min-height: 14px; }
+  .auth-go { height: 46px; border-radius: 999px; background: var(--ink); color: var(--paper); font-weight: 700; font-size: 13px; }
+  .auth-switch { font-size: 11px; color: var(--slate); padding: 8px; }
+  .panel { position: absolute; inset: 0; z-index: 15; background: var(--paper); overflow-y: auto; padding: calc(env(safe-area-inset-top, 0px) + 10px) 16px 24px; animation: up .25s ease; }
+  .panel-hd { display: flex; align-items: center; justify-content: space-between; height: 40px; }
+  .panel-hd b { font-size: 15px; }
+  .panel-hd button { width: 32px; height: 32px; font-size: 18px; color: var(--slate); }
+  .panel-sec { padding: 16px 0; border-bottom: 1px solid var(--line); display: flex; flex-direction: column; gap: 8px; }
+  .panel-sec h3 { font-size: 11px; color: var(--slate); font-weight: 500; letter-spacing: .04em; }
+  .find { display: flex; gap: 6px; }
+  .find input { flex: 1; min-width: 0; }
+  .find button, .prow button { height: 36px; padding: 0 14px; border-radius: 999px; background: var(--cream); color: var(--ink); font-size: 11px; font-weight: 700; flex: none; align-self: center; }
+  .find button { height: 44px; }
+  .prow { display: flex; align-items: center; gap: 10px; padding: 4px 0; font-size: 13px; }
+  .prow .nm { flex: 1; }
+  .prow input { accent-color: var(--teal); width: 18px; height: 18px; }
+  .prow .muted { color: var(--slate); font-size: 11px; }
+  .logout { margin-top: 20px; font-size: 11px; color: var(--slate); }
+  .toast { position: absolute; left: 50%; bottom: 80px; transform: translateX(-50%); z-index: 30; background: var(--ink); color: var(--paper); font-size: 12px; padding: 10px 16px; border-radius: 999px; max-width: 90%; }
+
   @keyframes rise { from { opacity: 0; transform: translateY(6px); } }
   @keyframes up { from { transform: translateY(100%); } }
   @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
@@ -318,7 +345,7 @@
         <button class="on" data-v="feed" aria-label="피드"><svg viewBox="0 0 24 24"><path d="M4 5h16v11H9l-5 4z"/></svg></button>
         <button data-v="map" aria-label="지도"><svg viewBox="0 0 24 24"><path d="M3 6l6-2 6 2 6-2v14l-6 2-6-2-6 2z M9 4v14 M15 6v14"/></svg></button>
       </div>
-      <button class="icon-btn" aria-label="검색"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4 4"/></svg></button>
+      <button class="icon-btn" id="friendsBtn" aria-label="친구와 방"><svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.5"/><path d="M3 19c0-3.3 2.7-5.5 6-5.5s6 2.2 6 5.5M16 7.5a3 3 0 0 1 0 6M18 13.8c1.8.6 3 2.2 3 4.7"/></svg></button>
     </div>
     <div class="tabs" id="tabs">
       <button class="new" id="upload" aria-label="새 스레드 시작" aria-expanded="false"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></button>
@@ -393,6 +420,35 @@
       <button class="send" id="send">보내기</button>
     </footer>
   </section>
+
+  <div class="auth" id="auth" hidden>
+    <form class="auth-box" id="authForm">
+      <h1>PatPat</h1>
+      <p>사진 한 장에 이야기 하나</p>
+      <input id="authNick" placeholder="닉네임" autocomplete="username" maxlength="50" required>
+      <input id="authPw" type="password" placeholder="비밀번호 (6자 이상)" autocomplete="current-password" minlength="6" required>
+      <p class="auth-err" id="authErr"></p>
+      <button class="auth-go" id="authGo">로그인</button>
+      <button type="button" class="auth-switch" id="authSwitch">처음이에요. 가입할게요</button>
+    </form>
+  </div>
+
+  <div class="panel" id="friends" hidden>
+    <div class="panel-hd"><b>친구와 방</b><button id="friendsClose" aria-label="닫기">×</button></div>
+    <div class="panel-sec">
+      <h3>친구 찾기</h3>
+      <div class="find"><input id="findQ" placeholder="닉네임으로 찾기"><button id="findGo">찾기</button></div>
+      <div id="findOut"></div>
+    </div>
+    <div class="panel-sec" id="reqSec"><h3>받은 친구 요청</h3><div id="reqOut"></div></div>
+    <div class="panel-sec">
+      <h3>내 친구</h3>
+      <div id="friendOut"></div>
+      <div class="find"><input id="roomName" placeholder="새 방 이름 (위에서 친구를 고르세요)" maxlength="50"><button id="roomGo">방 만들기</button></div>
+    </div>
+    <button class="logout" id="logout">로그아웃</button>
+  </div>
+  <div class="toast" id="toast" hidden></div>
 
   <section class="view mine" id="mineView">
     <div class="top">
@@ -515,6 +571,8 @@
     "신촌": { x: 72, y: 38, lat: 37.5551, lng: 126.9368 }, "여의도": { x: 48, y: 112, lat: 37.5219, lng: 126.9245 },
     "성수": { x: 78, y: 70, lat: 37.5446, lng: 127.0560 },
   };
+  const fmtDist = m => m < 1000 ? `약 ${m}m` : `약 ${(m / 1000).toFixed(1)}km`;
+  const tDist = t => t.distM != null ? fmtDist(t.distM) : distLabel(t.place);
   // 나와의 거리: 동네 중심끼리 계산하므로 "약"으로 표시. 내 위치는 내 상태의 동네(없으면 홍대)
   function distLabel(place) {
     if (!place || !places[place]) return "";
@@ -547,7 +605,7 @@
   const colors = ["#87CBB9", "#D6C7B0", "#6B7280", "#4f9a87"];
   // 사진이 없으면 단색 배경
   const bg = t => t.photo || `linear-gradient(${t.color}, ${t.color})`;
-  const isDm = () => !!rooms[room].dm;
+  const isDm = () => !!(rooms[room] && rooms[room].dm);
   // "내가 / 지우가 / 서진이가"
   const subj = id => id === "me" ? "내가" : people[id].name + ((people[id].name.at(-1).charCodeAt(0) - 0xAC00) % 28 ? "이가" : "가");
   const fresh = t => Date.now() - t.at < 24 * H;
@@ -594,7 +652,7 @@
       b.setAttribute("role", "button"); b.tabIndex = 0;
       b.style.backgroundImage = `linear-gradient(#0000 35%, var(--paper)), linear-gradient(#0007, #0000 25%), ${bg(lead)}`;
       b.innerHTML = `
-        <div class="kicker">${av(lead.by, "s")}${people[lead.by].name}${lead.place ? ` · ${esc(lead.place)}` : ""}${lead.showDist ? ` · ${distLabel(lead.place)}` : ""} · ${keep || !fresh(lead) ? lead.time : `${hoursLeft(lead)}시간 남음`}</div>
+        <div class="kicker">${av(lead.by, "s")}${people[lead.by].name}${lead.place ? ` · ${esc(lead.place)}` : ""}${lead.showDist ? ` · ${tDist(lead)}` : ""} · ${keep || !fresh(lead) ? lead.time : `${hoursLeft(lead)}시간 남음`}</div>
         <h2>${esc(lead.title)}</h2>
         <div class="last">${lastLine(lead)}</div>
         <div class="hero-btns"><span class="reply-ic" aria-label="답장 ${lead.replies.length}개${lead.unread ? `, 새 답장 ${lead.unread}개` : ""}">
@@ -622,7 +680,7 @@
         b.innerHTML = `
           ${t.unread ? `<i class="dot" style="top:6px;right:6px">${t.unread}</i>` : t.keptBy && !keep ? `<span class="badge pin">보관</span>` : ""}
           <h4>${esc(t.title)}</h4>
-          <div class="meta">${people[t.by].name} · ${t.showDist ? distLabel(t.place) : t.time}</div>
+          <div class="meta">${people[t.by].name} · ${t.showDist ? tDist(t) : t.time}</div>
           ${left !== null ? `<span class="time-left"><i style="width:${left * 100}%"></i></span>` : ""}`;
         b.onclick = () => openThread(threads.indexOf(t));
         sec.querySelector(".row-list").appendChild(b);
@@ -666,7 +724,7 @@
       put(b, t.place);
     });
     // 이 방 사람들의 상태
-    const r = rooms[room];
+    const r = rooms[room] || {};
     const who = [...(r.members || (r.dm ? [r.dm] : [])), "me"];
     who.filter(id => statuses[id] && fresh(statuses[id])).forEach(id => {
       const st = statuses[id];
@@ -770,7 +828,7 @@
     document.getElementById("thread").style.backgroundImage = `linear-gradient(#0006, #0000 28%, #0000 40%, #000d 78%), ${bg(t)}`;
     document.getElementById("bars").innerHTML = threads.map((_, k) => `<i class="${k <= current ? "on" : ""}"></i>`).join("");
     const meta = [];
-    if (t.place) meta.push(`<span>${esc(t.place)}${t.showDist ? ` · 나와 ${distLabel(t.place)}` : ""}</span>`);
+    if (t.place) meta.push(`<span>${esc(t.place)}${t.showDist ? ` · 나와 ${tDist(t)}` : ""}</span>`);
     if (t.ref) meta.push(`<span class="ref"><span class="thumb" style="background-image:${t.ref.bg}"></span>${esc(t.ref.room)} · ${esc(t.ref.title)}</span>`);
     if (!isDm()) meta.push(t.archivable
       ? `<button class="${t.keptBy ? "on" : ""}" id="keepBtn">${t.keptBy ? `${subj(t.keptBy)} 보관함` : "보관하기"}</button>`
@@ -785,7 +843,13 @@
     if (dmBtn) dmBtn.onclick = () => replyPrivately(t);
     const keepBtn = document.getElementById("keepBtn");
     // 공유 보관: 누가 보관하든 방 전체에 남음. 보관한 사람만 해제 가능
-    if (keepBtn) keepBtn.onclick = () => {
+    if (keepBtn) keepBtn.onclick = async () => {
+      if (api.on) {
+        const out = await api.call("POST", `/api/stories/${t.id}/keep`).catch(e => (api.toast(e.message), null));
+        if (out) t.keptBy = out.kept_by ? api.uid(out.kept_by) : null;
+        renderThread();
+        return;
+      }
       if (!t.keptBy) t.keptBy = "me";
       else if (t.keptBy === "me") t.keptBy = null;
       renderThread();
@@ -812,19 +876,35 @@
     sc.scrollTop = sc.scrollHeight;
   }
 
-  function toggleReact(r, e) {
+  async function toggleReact(r, e) {
+    if (api.on) {
+      const out = await api.call("POST", `/api/replies/${r.id}/react`, { emoji: e });
+      r.reacts = out.reactions; r.mine = out.my_reaction;
+      renderThread();
+      return;
+    }
     if (r.mine) { r.reacts[r.mine]--; if (!r.reacts[r.mine]) delete r.reacts[r.mine]; }
     if (r.mine === e) r.mine = null;
     else { r.reacts[e] = (r.reacts[e] || 0) + 1; r.mine = e; }
     renderThread();
   }
 
-  function openThread(i) { current = i; threads[i].unread = 0; renderThread(); app.classList.add("open"); }
+  function openThread(i) {
+    current = i; threads[i].unread = 0; renderThread(); app.classList.add("open");
+    if (api.on) api.loadReplies(threads[i]);
+  }
   document.getElementById("back").onclick = () => { app.classList.remove("open"); renderHome(); };
 
-  function send() {
+  async function send() {
     const text = msg.value.trim();
     if (!text || current === null) return;
+    if (api.on) {
+      msg.value = ""; msg.style.height = "auto";
+      const t = threads[current];
+      t.replies.push(api.reply(await api.call("POST", `/api/stories/${t.id}/replies`, { text })));
+      renderThread();
+      return;
+    }
     threads[current].replies.push({ by: "me", time: now(), text, reacts: {} });
     msg.value = ""; msg.style.height = "auto";
     renderThread();
@@ -838,7 +918,18 @@
   const pickColor = () => colors[Math.floor(Math.random() * colors.length)];
 
   // 그룹 스레드에서 작성자와의 1:1 방으로 따로 답장
-  function replyPrivately(t) {
+  async function replyPrivately(t) {
+    if (api.on) {
+      const dm = await api.call("POST", "/api/rooms/dm", { user_id: api.realId(t.by) }).catch(e => (api.toast(e.message), null));
+      if (!dm) return;
+      const created = await api.call("POST", `/api/rooms/${dm.id}/stories`, {
+        title: `"${t.title}"에 답장`, photo_data: t.photoData || null, color: pickColor(),
+      });
+      await api.loadRooms(dm.id);
+      openThread(threads.findIndex(x => x.id === created.id));
+      msg.focus();
+      return;
+    }
     let k = rooms.findIndex(r => r.dm === t.by);
     if (k < 0) { rooms.push({ name: people[t.by].name, dm: t.by, threads: [] }); k = rooms.length - 1; }
     const ref = { bg: bg(t), title: t.title, room: rooms[room].name };
@@ -855,7 +946,7 @@
   const draft = document.getElementById("draft");
   const picked = document.getElementById("picked");
   const file = document.getElementById("file");
-  let pickedUrl = null;
+  let pickedUrl = null, pickedData = null;
   function toggleSheet(open) {
     sheet.hidden = !open;
     document.getElementById("upload").setAttribute("aria-expanded", open);
@@ -868,12 +959,32 @@
     if (!f) return;
     pickedUrl = URL.createObjectURL(f);
     picked.style.backgroundImage = `url(${pickedUrl})`;
+    api.shrink(pickedUrl).then(d => { pickedData = d; });
     picked.hidden = false;
     file.value = "";
   };
-  document.getElementById("post").onclick = () => {
+  document.getElementById("post").onclick = async () => {
     const title = draft.value.trim();
     if (!title && !pickedUrl) { draft.focus(); return; }
+    if (api.on) {
+      if (!rooms[room]) { api.toast("먼저 친구와 방을 만들어 주세요"); return; }
+      const place = document.getElementById("place").value || null;
+      const created = await api.call("POST", `/api/rooms/${rooms[room].id}/stories`, {
+        title: title || "새 사진", photo_data: pickedData, color: pickColor(),
+        place, lat: place ? places[place].lat : null, lng: place ? places[place].lng : null,
+        show_distance: !!place && document.getElementById("showDist").checked,
+        archivable: document.getElementById("allowKeep").checked,
+      }).catch(e => (api.toast(e.message), null));
+      if (!created) return;
+      document.getElementById("showDist").checked = false;
+      document.getElementById("distWrap").hidden = true;
+      draft.value = ""; pickedUrl = pickedData = null; picked.hidden = true;
+      document.getElementById("place").value = "";
+      toggleSheet(false);
+      await api.loadRooms(rooms[room].id);
+      openThread(threads.findIndex(x => x.id === created.id));
+      return;
+    }
     threads.unshift({ by: "me", at: Date.now(), time: now(), title: title || "새 사진", unread: 0,
       photo: pickedUrl ? `url(${pickedUrl})` : null, color: pickColor(), replies: [],
       archivable: document.getElementById("allowKeep").checked,
@@ -1392,7 +1503,193 @@
     return { close };
   })();
 
+  // 서버 연결: /api 가 있으면 로그인 후 실제 데이터를 씀. 없으면(링크 미리보기 등) 예시 데이터 그대로
+  const api = (() => {
+    const self = { on: false, me: null, token: null };
+    const $ = id => document.getElementById(id);
+    const store = {
+      get() { try { return localStorage.getItem("patpat.token"); } catch (e) { return null; } },
+      set(v) { try { v ? localStorage.setItem("patpat.token", v) : localStorage.removeItem("patpat.token"); } catch (e) {} },
+    };
+    self.toast = text => {
+      const el = $("toast"); el.textContent = text; el.hidden = false;
+      clearTimeout(self._t); self._t = setTimeout(() => { el.hidden = true; }, 2600);
+    };
+    self.call = async (method, path, body) => {
+      const res = await fetch(path, {
+        method, headers: { "Content-Type": "application/json", ...(self.token ? { Authorization: `Bearer ${self.token}` } : {}) },
+        body: body ? JSON.stringify(body) : undefined,
+      });
+      if (res.status === 401 && self.token) { store.set(null); location.reload(); }
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.detail && typeof data.detail === "string" ? data.detail : "요청을 처리하지 못했어요");
+      return data;
+    };
+
+    // 서버 id ↔ 화면 id (나는 항상 "me")
+    self.uid = u => {
+      const id = u.id === self.me.id ? "me" : u.id;
+      people[id] = { name: id === "me" ? "나" : u.nickname, color: u.color };
+      return id;
+    };
+    self.realId = id => id === "me" ? self.me.id : id;
+    const hhmm = iso => new Date(iso + "Z").toTimeString().slice(0, 5);
+    const ago = iso => {
+      const d = (Date.now() - new Date(iso + "Z")) / 864e5;
+      return d < 1 ? hhmm(iso) : d < 2 ? "어제" : `${Math.floor(d)}일 전`;
+    };
+    self.reply = r => ({ id: r.id, by: self.uid(r.user), time: hhmm(r.created_at), text: r.text, reacts: r.reactions, mine: r.my_reaction });
+    function thread(s, old) {
+      return {
+        id: s.id, by: self.uid(s.user), at: Date.parse(s.created_at + "Z"), time: ago(s.created_at),
+        title: s.title, photo: s.photo_data ? `url(${s.photo_data})` : null, photoData: s.photo_data, color: s.color || "#4f9a87",
+        place: s.place, showDist: s.distance_m != null, distM: s.distance_m,
+        archivable: s.archivable, keptBy: s.kept_by ? self.uid(s.kept_by) : null,
+        // 목록에는 마지막 답장만 오므로, 열어 본 스레드는 가진 답장을 유지
+        replies: old && old.replies.length >= s.reply_count ? old.replies : (s.last_reply ? [self.reply(s.last_reply)] : []),
+        unread: old ? old.unread + Math.max(0, s.reply_count - old.count) : 0,
+        count: s.reply_count,
+      };
+    }
+    const myLoc = () => { const p = statuses.me && places[statuses.me.place]; return p ? `?lat=${p.lat}&lng=${p.lng}` : ""; };
+
+    self.loadRooms = async (focusId) => {
+      const list = await self.call("GET", "/api/rooms");
+      const keepId = focusId || (rooms[room] && rooms[room].id);
+      const old = new Map(rooms.flatMap(r => r.threads || []).map(t => [t.id, t]));
+      const next = await Promise.all(list.map(async r => {
+        const stories = await self.call("GET", `/api/rooms/${r.id}/stories${myLoc()}`);
+        const members = r.members.map(self.uid);
+        return {
+          id: r.id, name: r.is_dm ? (people[members.find(m => m !== "me")] || {}).name || r.name : r.name,
+          dm: r.is_dm ? members.find(m => m !== "me") : undefined,
+          members: members.filter(m => m !== "me"),
+          threads: stories.map(s => thread(s, old.get(s.id))),
+        };
+      }));
+      rooms.length = 0; rooms.push(...next);
+      room = Math.max(0, rooms.findIndex(r => r.id === keepId));
+      threads = rooms[room] ? rooms[room].threads : [];
+      renderHome();
+    };
+    self.loadReplies = async t => {
+      const list = await self.call("GET", `/api/stories/${t.id}/replies`);
+      t.replies = list.map(self.reply); t.count = list.length;
+      if (threads[current] === t) renderThread();
+    };
+    // 사진을 1024px 안쪽 JPEG data URL로 줄여서 보냄
+    self.shrink = url => new Promise(resolve => {
+      const img = new Image();
+      img.onload = () => {
+        const k = Math.min(1, 1024 / Math.max(img.width, img.height));
+        const c = document.createElement("canvas");
+        c.width = Math.round(img.width * k); c.height = Math.round(img.height * k);
+        c.getContext("2d").drawImage(img, 0, 0, c.width, c.height);
+        resolve(c.toDataURL("image/jpeg", 0.82));
+      };
+      img.onerror = () => resolve(null);
+      img.src = url;
+    });
+
+    // 친구와 방
+    async function renderFriends() {
+      const conns = await self.call("GET", "/api/connections");
+      const other = c => c.requester.id === self.me.id ? c.target : c.requester;
+      const reqs = conns.filter(c => c.status === "pending" && c.target.id === self.me.id);
+      const friends = conns.filter(c => c.status === "accepted").map(other);
+      $("reqSec").hidden = !reqs.length;
+      $("reqOut").innerHTML = "";
+      reqs.forEach(c => {
+        const row = document.createElement("div"); row.className = "prow";
+        row.innerHTML = `${av(self.uid(c.requester), "s")}<span class="nm">${esc(c.requester.nickname)}</span><button>수락</button>`;
+        row.querySelector("button").onclick = async () => { await self.call("PUT", `/api/connections/${c.id}/accept`); renderFriends(); };
+        $("reqOut").appendChild(row);
+      });
+      $("friendOut").innerHTML = friends.length ? "" : `<p class="prow muted">아직 친구가 없어요. 닉네임으로 찾아서 요청해 보세요</p>`;
+      friends.forEach(u => {
+        const row = document.createElement("label"); row.className = "prow";
+        row.innerHTML = `<input type="checkbox" value="${u.id}">${av(self.uid(u), "s")}<span class="nm">${esc(u.nickname)}</span><button type="button">1:1</button>`;
+        row.querySelector("button").onclick = async e => {
+          e.preventDefault();
+          const dm = await self.call("POST", "/api/rooms/dm", { user_id: u.id });
+          $("friends").hidden = true; await self.loadRooms(dm.id);
+        };
+        $("friendOut").appendChild(row);
+      });
+    }
+    $("friendsBtn").onclick = () => { $("friends").hidden = false; renderFriends(); };
+    $("friendsClose").onclick = () => { $("friends").hidden = true; };
+    $("findGo").onclick = async () => {
+      const q = $("findQ").value.trim();
+      if (!q) return;
+      const users = await self.call("GET", `/api/users/search?q=${encodeURIComponent(q)}`);
+      $("findOut").innerHTML = users.length ? "" : `<p class="prow muted">"${esc(q)}" 닉네임을 찾지 못했어요</p>`;
+      users.forEach(u => {
+        const row = document.createElement("div"); row.className = "prow";
+        row.innerHTML = `${av(self.uid(u), "s")}<span class="nm">${esc(u.nickname)}</span><button>친구 요청</button>`;
+        row.querySelector("button").onclick = async ev => {
+          const c = await self.call("POST", "/api/connections/request", { target_id: u.id });
+          ev.target.textContent = c.status === "accepted" ? "이미 친구" : "요청 보냄"; ev.target.disabled = true;
+        };
+        $("findOut").appendChild(row);
+      });
+    };
+    $("roomGo").onclick = async () => {
+      const name = $("roomName").value.trim();
+      const ids = [...$("friendOut").querySelectorAll("input:checked")].map(i => i.value);
+      if (!name || !ids.length) { self.toast("방 이름을 쓰고 친구를 한 명 이상 골라 주세요"); return; }
+      const r = await self.call("POST", "/api/rooms", { name, member_ids: ids }).catch(e => (self.toast(e.message), null));
+      if (!r) return;
+      $("roomName").value = ""; $("friends").hidden = true;
+      await self.loadRooms(r.id);
+    };
+    $("logout").onclick = async () => { await self.call("POST", "/api/auth/logout").catch(() => {}); store.set(null); location.reload(); };
+
+    // 로그인 · 가입
+    let signup = false;
+    $("authSwitch").onclick = () => {
+      signup = !signup;
+      $("authGo").textContent = signup ? "가입하기" : "로그인";
+      $("authSwitch").textContent = signup ? "이미 계정이 있어요. 로그인할게요" : "처음이에요. 가입할게요";
+      $("authErr").textContent = "";
+    };
+    $("authForm").onsubmit = async e => {
+      e.preventDefault();
+      try {
+        const out = await self.call("POST", signup ? "/api/auth/register" : "/api/auth/login",
+          { nickname: $("authNick").value.trim(), password: $("authPw").value });
+        self.token = out.token; store.set(out.token);
+        await start(out.user);
+      } catch (err) { $("authErr").textContent = err.message; }
+    };
+
+    async function start(user) {
+      self.me = user; self.on = true;
+      people.me = { name: "나", color: user.color };
+      // 서버 모드에선 예시 친구·상태·홈 데이터를 비움 (미니룸·지도 상태는 아직 이 기기에만 저장)
+      Object.keys(statuses).filter(k => k !== "me").forEach(k => delete statuses[k]);
+      $("auth").hidden = true;
+      await self.loadRooms();
+      if (!rooms.length) { $("friends").hidden = false; renderFriends(); }
+      // 새 스토리·답장 확인 (실시간 연결 전까지 짧은 간격으로 확인)
+      setInterval(() => { if (document.visibilityState === "visible") self.loadRooms().catch(() => {}); }, 15000);
+      setInterval(() => { if (app.classList.contains("open") && threads[current]) self.loadReplies(threads[current]).catch(() => {}); }, 4000);
+    }
+
+    self.boot = async () => {
+      let res;
+      try { res = await fetch("/api/me", { headers: store.get() ? { Authorization: `Bearer ${store.get()}` } : {} }); }
+      catch (e) { return; }
+      const type = res.headers.get("content-type") || "";
+      if (!type.includes("application/json")) return; // 서버 없음: 예시 데이터로
+      if (res.ok) { self.token = store.get(); await start(await res.json()); }
+      else if (res.status === 401) { store.set(null); $("auth").hidden = false; }
+    };
+    return self;
+  })();
+
   renderHome();
+  api.boot();
 </script>
 </body>
 </html>
