@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>PatPat</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;800&display=swap" rel="stylesheet">
 <style>
   /* 꽉 채운 직사각형 그리드. 모서리·그림자 없이 1px 선으로만 구분 */
   :root {
@@ -356,19 +356,115 @@
   @keyframes rise { from { opacity: 0; transform: translateY(6px); } }
   @keyframes up { from { transform: translateY(100%); } }
   @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
+
+  /* ===== 다듬기 ===== */
+  :root {
+    --paper: #0b0b0c;
+    --surface: #161618;
+    --cream: #232326;
+    --line: #ffffff14;
+    --ink: #f2f2f3;
+    --slate: #8e8e93;
+    --red: #ff453a;
+  }
+  body { font-size: 14px; -webkit-font-smoothing: antialiased; }
+  .app { border-inline-color: #ffffff0d; }
+
+  .home .top { height: 48px; padding: env(safe-area-inset-top, 0px) 18px 0; justify-content: flex-start; }
+  .wordmark { font-size: 19px; font-weight: 800; letter-spacing: -0.05em; }
+  .wordmark::after { content: "."; color: var(--teal); }
+  .home .scroll { padding-bottom: calc(76px + env(safe-area-inset-bottom, 0px)); }
+  .tabs .new { display: none; }
+
+  .tabbar {
+    position: absolute; left: 0; right: 0; bottom: 0; z-index: 8;
+    display: flex; align-items: center; justify-content: space-around;
+    height: calc(58px + env(safe-area-inset-bottom, 0px)); padding: 0 8px env(safe-area-inset-bottom, 0px);
+    background: #0b0b0cdb; backdrop-filter: blur(20px) saturate(1.4); border-top: 1px solid var(--line);
+  }
+  #seg { display: contents; }
+  .tabbar button { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 3px; color: var(--slate); font-size: 10px; font-weight: 500; }
+  .tabbar button svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linejoin: round; stroke-linecap: round; }
+  .tabbar button.on { color: var(--ink); }
+  .tabbar .make { flex: none; width: 44px; height: 44px; border-radius: 50%; background: var(--ink); color: var(--paper); justify-content: center; margin: 0 6px; }
+  .tabbar .make svg { stroke-width: 2.2; }
+  .me-av .av { width: 22px; height: 22px; box-shadow: 0 0 0 1.5px var(--line); }
+  .home .listen { bottom: calc(58px + env(safe-area-inset-bottom, 0px)); }
+
+  /* 대표 스토리 */
+  .hero { padding: 22px 20px; gap: 6px; }
+  .hero .kicker { font-size: 11px; font-weight: 500; letter-spacing: 0.01em; color: #ffffffb8; }
+  .hero h2 { font-size: 28px; font-weight: 800; letter-spacing: -0.04em; line-height: 1.15; }
+  .hero .last { font-size: 13px; color: #ffffffa6; }
+  .reply-ic { width: 44px; height: 44px; bottom: 74px; background: #ffffffeb; box-shadow: 0 6px 20px #0006; }
+  .dot { background: var(--red); }
+  .hero .tabs { margin-top: 12px; }
+  .rooms { gap: 6px; }
+  .rooms button { height: 30px; padding: 0 14px; font-size: 12px; font-weight: 600; letter-spacing: -0.01em; }
+  .hero .rooms button:not(.on) { background: #ffffff1f; color: #ffffffe6; }
+  .rooms button.on { background: var(--ink); color: var(--paper); }
+
+  /* 가로 줄 */
+  .row-hd { padding: 28px 18px 12px; }
+  .row-hd h3 { font-size: 16px; font-weight: 800; letter-spacing: -0.03em; }
+  .row-hd span { font-size: 12px; font-weight: 500; }
+  .row-list { gap: 6px; padding: 0 18px; scroll-padding-inline: 18px; }
+  .pcard { width: 148px; padding: 12px; }
+  .pcard h4 { font-size: 13px; font-weight: 700; letter-spacing: -0.02em; }
+  .pcard .meta { font-size: 10px; }
+  .pcard .time-left { height: 2px; background: #ffffff26; }
+  .pcard .badge.pin { background: #000000a6; font-weight: 600; letter-spacing: .02em; }
+
+  /* 스레드 */
+  .t-head h1 { font-size: 24px; font-weight: 800; letter-spacing: -0.04em; }
+  .t-meta { gap: 0; margin-top: 10px; }
+  .t-meta > * { background: none; backdrop-filter: none; padding: 4px 0; font-size: 11px; color: #ffffffbf; text-shadow: 0 1px 4px #0009; }
+  .t-meta > * + *::before { content: "·"; margin: 0 8px; color: #ffffff66; }
+  .t-meta button { text-decoration: underline; text-underline-offset: 3px; text-decoration-color: #ffffff59; }
+  .t-meta button.on { background: none; color: var(--teal); }
+  .reply .who { font-size: 11px; font-weight: 500; }
+  .reply p { font-size: 14px; }
+
+  /* 지도 */
+  .map-wrap { background: #121214; }
+  .mk .tag { background: #161618e6; backdrop-filter: blur(8px); border-color: var(--line); border-radius: 999px; padding: 5px 10px; }
+  .mk.me .tag { background: #2d5a50e6; }
+  .now, .music-row { background: var(--paper); }
+
+  /* 작성 · 패널 */
+  .sheet { background: var(--surface); border-bottom-color: var(--line); }
+  .sheet-row { border-top-color: var(--line); }
+  .panel, .auth { background: var(--paper); }
+  .sheet textarea:focus-visible, .now input:focus-visible { outline: none; }
+  .sheet textarea { padding: 16px 18px; min-height: 84px; }
+  .sheet-row > * { height: 46px; font-size: 13px; }
+  .sheet-row select { color: var(--slate); }
+  .sheet-row .send, .now .send { background: var(--ink); color: var(--paper); font-weight: 700; }
+  .auth-box h1 { font-weight: 800; letter-spacing: -0.05em; }
+  .auth-box h1::after { content: "."; color: var(--teal); }
+
+  /* 내 홈 */
+  .owners { gap: 16px; padding: 6px 18px 14px; }
+  .owners .av { width: 46px; height: 46px; }
+  .cy-info strong { font-size: 20px; font-weight: 800; letter-spacing: -0.04em; }
+  .cy-stats b { font-size: 18px; font-weight: 800; }
+  .dex-wrap h3, .viewers > span { color: var(--slate); }
+  .cy-room-hd b { font-style: normal; font-weight: 800; color: var(--ink); letter-spacing: -0.02em; }
 </style>
 </head>
 <body>
 <div class="app" id="app">
   <section class="view home">
-    <div class="top">
-      <button class="me-btn" id="meBtn" aria-label="내 홈">나</button>
-      <div class="seg" id="seg">
-        <button class="on" data-v="feed" aria-label="피드"><svg viewBox="0 0 24 24"><path d="M4 5h16v11H9l-5 4z"/></svg></button>
-        <button data-v="map" aria-label="지도"><svg viewBox="0 0 24 24"><path d="M3 6l6-2 6 2 6-2v14l-6 2-6-2-6 2z M9 4v14 M15 6v14"/></svg></button>
-      </div>
-      <button class="icon-btn" id="friendsBtn" aria-label="친구와 방"><svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.5"/><path d="M3 19c0-3.3 2.7-5.5 6-5.5s6 2.2 6 5.5M16 7.5a3 3 0 0 1 0 6M18 13.8c1.8.6 3 2.2 3 4.7"/></svg></button>
-    </div>
+    <div class="top"><span class="wordmark">PatPat</span></div>
+    <nav class="tabbar" aria-label="메뉴">
+      <span id="seg">
+        <button class="on" data-v="feed"><svg viewBox="0 0 24 24"><path d="M4 5h16v11H9l-5 4z"/></svg><span>피드</span></button>
+        <button data-v="map"><svg viewBox="0 0 24 24"><path d="M3 6l6-2 6 2 6-2v14l-6 2-6-2-6 2z M9 4v14 M15 6v14"/></svg><span>지도</span></button>
+      </span>
+      <button class="make" id="makeBtn" aria-label="새 이야기 올리기"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></button>
+      <button id="friendsBtn"><svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.5"/><path d="M3 19c0-3.3 2.7-5.5 6-5.5s6 2.2 6 5.5M16 7.5a3 3 0 0 1 0 6M18 13.8c1.8.6 3 2.2 3 4.7"/></svg><span>친구</span></button>
+      <button id="meBtn"><span class="me-av" id="meAv"></span><span>나</span></button>
+    </nav>
     <div class="tabs" id="tabs">
       <button class="new" id="upload" aria-label="새 스레드 시작" aria-expanded="false"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></button>
       <div class="rooms" id="rooms"></div>
@@ -685,6 +781,7 @@
   const now = () => new Date().toTimeString().slice(0, 5);
 
   function renderHome() {
+    document.getElementById("meAv").innerHTML = av("me");
     document.querySelector(".home .top").after(tabsEl);
     const menu = document.getElementById("rooms");
     menu.innerHTML = "";
@@ -1014,6 +1111,11 @@
     if (open) draft.focus();
   }
   document.getElementById("upload").onclick = () => toggleSheet(sheet.hidden);
+  document.getElementById("makeBtn").onclick = () => {
+    if (!document.getElementById("mapView").hidden) document.querySelector('#seg [data-v="feed"]').click();
+    document.querySelector(".home .scroll").scrollTop = 0;
+    toggleSheet(sheet.hidden);
+  };
   document.getElementById("pick").onclick = () => file.click();
   file.onchange = () => {
     const f = file.files[0];
@@ -1684,7 +1786,10 @@
         $("friendOut").appendChild(row);
       });
     }
-    $("friendsBtn").onclick = () => { $("friends").hidden = false; renderFriends(); };
+    $("friendsBtn").onclick = () => {
+      if (!self.on) { self.toast("친구 찾기는 서버에 연결했을 때 쓸 수 있어요"); return; }
+      $("friends").hidden = false; renderFriends();
+    };
     $("friendsClose").onclick = () => { $("friends").hidden = true; };
     $("findGo").onclick = async () => {
       const q = $("findQ").value.trim();
